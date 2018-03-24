@@ -22,14 +22,14 @@ Connect-VIServer -Server $vcenter -Credential $cred
 # Get each host in specified cluster that meets criteria
 Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.ConnectionState -eq "Connected" } | foreach {
 
-    Write-host "Preparing $($_.Name) for ESXCLI" -F Yellow
+    Write-Host "Preparing $($_.Name) for esxcli" -F Yellow
 
-    $ESXCLI = Get-EsxCli -VMHost $_ -V2
+    $esxcli = Get-EsxCli -VMHost $_ -V2
 
     # List VIBs
-    Write-host "Listing VIB on $($_.Name)" -F Yellow
+    Write-Host "Listing VIB on $($_.Name)" -F Yellow
 		
-	$action = $ESXCLI.software.vib.list.Invoke() | where { $_.Name -like $vibname }
+	$action = $esxcli.software.vib.list.Invoke() | where { $_.Name -like $vibname }
 	
     # Display VIB information
 	Write-Host ""

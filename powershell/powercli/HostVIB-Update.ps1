@@ -27,12 +27,12 @@ Connect-VIServer -Server $vcenter -Credential $cred
 # Get each host in specified cluster that meets criteria
 Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.ConnectionState -eq "Connected" } | foreach {
 
-    Write-host "Preparing $($_.Name) for ESXCLI" -F Yellow
+    Write-Host "Preparing $($_.Name) for esxcli" -F Yellow
 
-    $ESXCLI = Get-EsxCli -VMHost $_ -V2
+    $esxcli = Get-EsxCli -VMHost $_ -V2
 
     # Update VIBs
-    Write-host "Updating VIB on $($_.Name)" -F Yellow
+    Write-Host "Updating VIB on $($_.Name)" -F Yellow
 		
 		# Create Update Arguments
 		$updParm = @{
@@ -43,8 +43,8 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			force = $force
 		}
 	
-	$action = $ESXCLI.software.vib.update.Invoke($insParm)
+	$action = $esxcli.software.vib.update.Invoke($insParm)
 
     # Verify VIB updated successfully
-    if ($action.Message -eq "Operation finished successfully."){Write-host "Action Completed successfully on $($_.Name)" -F Green} else {Write-host $action.Message -F Red}
+    if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }

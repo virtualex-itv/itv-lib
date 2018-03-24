@@ -18,7 +18,7 @@ $depoturl = "https://hostupdate.vmware.com/software/VUM/PRODUCTION/main/vmw-depo
 $profilename = "ESXi-6.5.0-20180304001-standard"
 $allowdowngrades = $true
 $nosigcheck = $false
-$maintenancemode = $false
+$maintenancemode = $true
 $force = $false
 $dryrun = $false
 
@@ -28,12 +28,12 @@ Connect-VIServer -Server $vcenter -Credential $cred
 # Get each host in specified cluster that meets criteria
 Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.ConnectionState -eq "Connected" } | foreach {
 
-    Write-host "Preparing $($_.Name) for ESXCLI" -F Yellow
+    Write-Host "Preparing $($_.Name) for esxcli" -F Yellow
 
-    $ESXCLI = Get-EsxCli -VMHost $_ -V2
+    $esxcli = Get-EsxCli -VMHost $_ -V2
 
     # Update ImageProfile
-    Write-host "Updating ImageProfile on $($_.Name)" -F Yellow
+    Write-Host "Updating ImageProfile on $($_.Name)" -F Yellow
 		
 		# Create Firewall Arguments
 		$enParm = @{
@@ -41,7 +41,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			rulesetid = "httpClient"
 		}
 		
-		disParm = @{
+		$disParm = @{
 			enabled = $false
 			rulesetid = "httpClient"
 		}
@@ -57,12 +57,12 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			force = $force
 		}
 	
-	$ESXCLI.network.firewall.ruleset.set.Invoke($enParm)
+	$enaction = $esxcli.network.firewall.ruleset.set.Invoke($enParm)
 	
-	$action = $ESXCLI.software.profile.update.Invoke($updParm)
+	$action = $esxcli.software.profile.update.Invoke($updParm)
 	
-	$ESXCLI.network.firewall.ruleset.set.Invoke($disParm)
+	$disaction = $esxcli.network.firewall.ruleset.set.Invoke($disParm)
 
     # Verify ImgageProfile updated successfully
-    if ($action.Message -eq "Operation finished successfully."){Write-host "Action Completed successfully on $($_.Name)" -F Green} else {Write-host $action.Message -F Red}
+    if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }
