@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/ithinkvirtual.png"></p>
+<p align="center"><img src="http://ithinkvirtual.com/wp-content/uploads/2018/03/vmx_itv_bit2.png"></p>
 
 # itv-lib
 
