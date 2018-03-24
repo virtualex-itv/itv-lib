@@ -35,6 +35,17 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
     # Update ImageProfile
     Write-host "Updating ImageProfile on $($_.Name)" -F Yellow
 		
+		# Create Firewall Arguments
+		$enParm = @{
+			enabled = $true
+			rulesetid = "httpClient"
+		}
+		
+		disParm = @{
+			enabled = $false
+			rulesetid = "httpClient"
+		}
+		
 		# Create Update Arguments
 		$updParm = @{
 			allowdowngrades = $allowdowngrades
@@ -46,7 +57,11 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			force = $force
 		}
 	
+	$ESXCLI.network.firewall.ruleset.set.Invoke($enParm)
+	
 	$action = $ESXCLI.software.profile.update.Invoke($updParm)
+	
+	$ESXCLI.network.firewall.ruleset.set.Invoke($disParm)
 
     # Verify ImgageProfile updated successfully
     if ($action.Message -eq "Operation finished successfully."){Write-host "Action Completed successfully on $($_.Name)" -F Green} else {Write-host $action.Message -F Red}
