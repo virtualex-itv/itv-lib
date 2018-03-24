@@ -1,4 +1,4 @@
-<p align="center">![iThinkVirtual](https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/ithinkvirtual.png)</p>
+<p align="center"><img src="https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/ithinkvirtual.png"></p>
 
 # itv-lib
 
