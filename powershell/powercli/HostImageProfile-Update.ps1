@@ -7,14 +7,17 @@
      Twitter:       @iVirtuAlex
     ===========================================================================
     .DESCRIPTION
-        Removes VIB on an ESXi host
+        Upgrade ImpageProfile on an ESXi host
 #>
 
 # Define Variables
 $Cluster = "Cluster"
 $vcenter = "vcsa.lab.edu"
 $cred = Get-Credential
-$vibname = "esx-nfsplugin"
+$depoturl = "https://hostupdate.vmware.com/software/VUM/PRODUCTION/main/vmw-depot-index.xml"
+$profilename = "ESXi-6.5.0-20180304001-standard"
+$allowdowngrades = $true
+$nosigcheck = $false
 $maintenancemode = $false
 $force = $false
 $dryrun = $false
@@ -30,18 +33,21 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
     $ESXCLI = Get-EsxCli -VMHost $_ -V2
 
     # Install VIBs
-    Write-host "Removing VIB from $($_.Name)" -F Yellow
+    Write-host "Installing VIB on $($_.Name)" -F Yellow
 		
-		# Create Removal Arguments
-		$remParm = @{
-			vibname = $vibname
+		# Create Installation Arguments
+		$upgParm = @{
+			allowdowngrades = $allowdowngrades
+			depot = $depoturl
+			profile = $profilename
+			dryrun = $dryrun
+			nosigcheck = $nosigcheck
 			maintenancemode = $maintenancemode
 			force = $force
-			dryrun = $dryrun
 		}
 	
-	$action = $ESXCLI.software.vib.remove.Invoke($remParm)
+	$action = $ESXCLI.software.profile.update.Invoke($upgParm)
 
-    # Verify VIB removed successfully
+    # Verify VIB installed successfully
     if ($action.Message -eq "Operation finished successfully."){Write-host "Action Completed successfully on $($_.Name)" -F Green} else {Write-host $action.Message -F Red}
 }
