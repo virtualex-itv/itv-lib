@@ -7,7 +7,7 @@ This library is a collection of different scripts I've written for various use c
 ## batch
 
 ## powershell
-* ### powercli
+* ### [powercli](https://github.com/virtualex-itv/itv-lib/tree/master/powershell/powercli)
 * ### psappdeploytoolkit
 
 ## shell
@@ -16,7 +16,7 @@ This library is a collection of different scripts I've written for various use c
   * ### pwsh
 
 ## txt
-* ### diskpart
+* ### [diskpart](https://github.com/virtualex-itv/itv-lib/tree/master/txt/diskpart)
 
 
 
