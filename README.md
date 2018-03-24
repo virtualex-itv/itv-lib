@@ -1,4 +1,4 @@
-![iThinkVirtual](https://ithinkvirtual.com/wp-admin/upload.php?item=1281)
+<p align="center">![iThinkVirtual](ithinkvirtual.png)</p>
 
 # itv-lib
 
