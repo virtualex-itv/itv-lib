@@ -32,11 +32,11 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
     $ESXCLI = Get-EsxCli -VMHost $_ -V2
 
-    # Install VIBs
-    Write-host "Installing VIB on $($_.Name)" -F Yellow
+    # Update ImageProfile
+    Write-host "Updating ImageProfile on $($_.Name)" -F Yellow
 		
-		# Create Installation Arguments
-		$upgParm = @{
+		# Create Update Arguments
+		$updParm = @{
 			allowdowngrades = $allowdowngrades
 			depot = $depoturl
 			profile = $profilename
@@ -46,8 +46,8 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			force = $force
 		}
 	
-	$action = $ESXCLI.software.profile.update.Invoke($upgParm)
+	$action = $ESXCLI.software.profile.update.Invoke($updParm)
 
-    # Verify VIB installed successfully
+    # Verify ImgageProfile updated successfully
     if ($action.Message -eq "Operation finished successfully."){Write-host "Action Completed successfully on $($_.Name)" -F Green} else {Write-host $action.Message -F Red}
 }
