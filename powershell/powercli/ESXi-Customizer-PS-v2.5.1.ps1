@@ -2,9 +2,11 @@
 #
 # ESXi-Customizer-PS.ps1 - a script to build a customized ESXi installation ISO using ImageBuilder
 #
-# Version:       2.5.1
+# Version:       2.5.1a
 # Author:        Andreas Peetz (ESXi-Customizer-PS@v-front.de)
+# Modified By:   Alex Lopez (https://ithinkvirtual.com)
 # Info/Tutorial: https://esxi-customizer-ps.v-front.de/
+# Vid-Tutorial:  https://ithinkvirtual.com/videos/create-a-custom-esxi-image-with-esxi-customizer-ps-script/
 #
 # License:
 #
@@ -59,21 +61,21 @@ function AddVIB2Profile($vib) {
     $AddVersion = $vib.Version
     $ExVersion = ($MyProfile.VibList | where { $_.Name -eq $vib.Name }).Version
     if ($AccLevel[$vib.AcceptanceLevel.ToString()] -gt $AccLevel[$MyProfile.AcceptanceLevel.ToString()]) {
-        write-host -ForegroundColor Yellow -nonewline (" [New AcceptanceLevel: " + $vib.AcceptanceLevel + "]")
+        write-host -F Yellow -nonewline (" [New AcceptanceLevel: " + $vib.AcceptanceLevel + "]")
         $MyProfile.AcceptanceLevel = $vib.AcceptanceLevel
     }
     If ($MyProfile.VibList -contains $vib) {
-        write-host -ForegroundColor Yellow " [IGNORED, already added]"
+        write-host -F Yellow " [IGNORED, already added]"
     } else {
         Add-EsxSoftwarePackage -SoftwarePackage $vib -Imageprofile $MyProfile -force -ErrorAction SilentlyContinue | Out-Null 
         if ($?) {
             if ($ExVersion -eq $null) {
-                write-host -ForegroundColor Green " [OK, added]"
+                write-host -F Green " [OK, added]"
             } else {
-                write-host -ForegroundColor Yellow (" [OK, replaced " + $ExVersion + "]")
+                write-host -F Yellow (" [OK, replaced " + $ExVersion + "]")
             }
         } else {
-            write-host -ForegroundColor Red " [FAILED, invalid package?]"
+            write-host -F Red " [FAILED, invalid package?]"
         }
     }
 }
@@ -106,7 +108,7 @@ function cleanup() {
 #$pswindow.backgroundcolor = "Black"
 
 # Write info and help if requested
-write-host ("`nThis is " + $ScriptName + " Version " + $ScriptVersion + " (visit " + $ScriptURL + " for more information!)")
+write-host -F Cyan ("`nThis is " + $ScriptName + " Version " + $ScriptVersion + " (visit " + $ScriptURL + " for more information!)")
 if ($help) {
     write-host "`nUsage:"
     write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65] [-ozip] [-pkgDir <dir>]"
@@ -122,7 +124,7 @@ if ($help) {
     write-host "   -outDir <dir>      : directory to store the customized ISO or Offline bundle (the default is the"
     write-host "                        script directory. If specified the log file will also be moved here.)"
     write-host "   -vft               : connect the V-Front Online depot"
-	write-host "   -dpt depot1[,...]  : connect additional Online depots by URL or local Offline bundles by file name"
+    write-host "   -dpt depot1[,...]  : connect additional Online depots by URL or local Offline bundles by file name"
     write-host "   -load vib1[,...]   : load additional packages from connected depots or Offline bundles"
     write-host "   -remove vib1[,...] : remove named VIB packages from the custom Imageprofile"
     write-host "   -sip               : select an Imageprofile from the current list"
@@ -138,17 +140,17 @@ if ($help) {
     write-host "   -test              : skip package download and image build (for testing)`n"
     exit
 } else {
-    write-host "(Call with -help for instructions)"
+    write-host -F Yellow "(Call with -help for instructions)"
     if (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir')) {
-        write-host ("`nTemporarily logging to " + $log + " ...")
+        write-host -F DarkGray ("`nTemporarily logging to " + $log + " ...")
     } else {
-        write-host ("`nLogging to " + $log + " ...")
+        write-host -F DarkGray ("`nLogging to " + $log + " ...")
     }
     # Stop active transcript
     try { Stop-Transcript | out-null } catch {}
     # Start own transcript
     try { Start-Transcript -Path $log -Force -Confirm:$false | Out-Null } catch {
-        write-host -ForegroundColor Red "`nFATAL ERROR: Log file cannot be opened. Bad file path or missing permission?`n"
+        write-host -F Red "`nFATAL ERROR: Log file cannot be opened. Bad file path or missing permission?`n"
         exit
     }
 }
@@ -161,7 +163,7 @@ foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
     if (Get-Module -ListAvailable -Name $comp -ErrorAction:SilentlyContinue) {
         if (!(Get-Module -Name $comp -ErrorAction:SilentlyContinue)) {
             if (!(Import-Module -PassThru -Name $comp -ErrorAction:SilentlyContinue)) {
-                write-host -ForegroundColor Red "`nFATAL ERROR: Failed to import the $comp module!`n"
+                write-host -F Red "`nFATAL ERROR: Failed to import the $comp module!`n"
                 exit
             }
         }
@@ -169,12 +171,12 @@ foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
         if (Get-PSSnapin -Registered -Name $comp -ErrorAction:SilentlyContinue) {
             if (!(Get-PSSnapin -Name $comp -ErrorAction:SilentlyContinue)) {
                 if (!(Add-PSSnapin -PassThru -Name $comp -ErrorAction:SilentlyContinue)) {
-                    write-host -ForegroundColor Red "`nFATAL ERROR: Failed to add the $comp snapin!`n"
+                    write-host -F Red "`nFATAL ERROR: Failed to add the $comp snap-in!`n"
                     exit
                 }
             }
         } else {
-            write-host -ForegroundColor Red "`nFATAL ERROR: $comp is not available as a module or snapin! It looks like there is no compatible version of PowerCLI installed!`n"
+            write-host -F Red "`nFATAL ERROR: $comp is not available as a module or snap-in! It looks like there is no compatible version of PowerCLI installed!`n"
             exit
         }
     }
@@ -182,24 +184,25 @@ foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
 
 # Parameter sanity check
 if ( ($v50 -and ($v51 -or $v55 -or $v60 -or $v65)) -or ($v51 -and ($v55 -or $v60 -or $v65)) -or ($v55 -and ($v60 -or $v65)) -or ($v60 -and $v65) ) {
-    write-host -ForegroundColor Yellow "`nWARNING: Multiple ESXi versions specified. Highest version will take precedence!"
+    write-host -F Yellow "`nWARNING: Multiple ESXi versions specified. Highest version will take precedence!"
 }
 if ($update -and ($izip -eq "")) {
-    write-host -ForegroundColor Red "`nFATAL ERROR: -update requires -izip!`n"
+    write-host -F Red "`nFATAL ERROR: -update requires -izip!`n"
     exit
 }
 
 # Check PowerShell and PowerCLI version
 if (!(Test-Path variable:PSVersionTable)) {
-    write-host -ForegroundColor Red "`nFATAL ERROR: This script requires at least PowerShell version 2.0!`n"
+    write-host -F Red "`nFATAL ERROR: This script requires at least PowerShell version 2.0!`n"
     exit
 }
 $psv = $PSVersionTable.PSVersion | select Major,Minor
-$pcv = Get-PowerCLIVersion | select major,minor,UserFriendlyVersion
-write-host ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and " + $pcv.UserFriendlyVersion)
+$pcv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
+write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and PowerCLI version " + $pcv.Major + "." + $pcv.Minor + "." + $pcv.Build + " build " + $pcv.Revision )
+
 
 if ( ($pcv.major -lt 5) -or (($pcv.major -eq 5) -and ($pcv.minor -eq 0)) ) {
-    write-host -ForegroundColor Red "`nFATAL ERROR: This script requires at least PowerCLI version 5.1 !`n"
+    write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 5.1 !`n"
     exit
 }
 
@@ -207,18 +210,18 @@ if ($update) {
     # Try to add Offline bundle specified by -izip
     write-host -nonewline "`nAdding Base Offline bundle $izip (to be updated)..."
     if ($upddepot = Add-EsxSoftwaredepot $izip) {
-        write-host -ForegroundColor Green " [OK]"
+        write-host -F Green " [OK]"
     } else {
-        write-host -ForegroundColor Red "`nFATAL ERROR: Cannot add Base Offline bundle!`n"
+        write-host -F Red "`nFATAL ERROR: Cannot add Base Offline bundle!`n"
         exit
     }
     if (!($CloneIP = Get-EsxImageprofile -Softwaredepot $upddepot)) {
-        write-host -ForegroundColor Red "`nFATAL ERROR: No Imageprofiles found in Base Offline bundle!`n"
+        write-host -F Red "`nFATAL ERROR: No Imageprofiles found in Base Offline bundle!`n"
         exit
     }
     if ($CloneIP -is [system.array]) {
         # Input Offline bundle includes multiple Imageprofiles. Pick only the latest standard profile:
-        write-host -ForegroundColor Yellow "Warning: Input Offline Bundle contains multiple Imageprofiles. Will pick the latest standard profile!"
+        write-host -F Yellow "Warning: Input Offline Bundle contains multiple Imageprofiles. Will pick the latest standard profile!"
         $CloneIP = @( $CloneIP | Sort-Object -Descending -Property @{Expression={$_.Name.Substring(0,10)}},@{Expression={$_.CreationTime.Date}},Name )[0]
     }
 }
@@ -227,18 +230,18 @@ if (($izip -eq "") -or $update) {
     # Connect the VMware ESXi base depot
     write-host -nonewline "`nConnecting the VMware ESXi Online depot ..."
     if ($basedepot = Add-EsxSoftwaredepot $vmwdepotURL) {
-        write-host -ForegroundColor Green " [OK]"
+        write-host -F Green " [OK]"
     } else {
-        write-host -ForegroundColor Red "`nFATAL ERROR: Cannot add VMware ESXi Online depot. Please check your Internet connectivity and/or proxy settings!`n"
+        write-host -F Red "`nFATAL ERROR: Cannot add VMware ESXi Online depot. Please check your Internet connectivity and/or proxy settings!`n"
         exit
     }
 } else {
     # Try to add Offline bundle specified by -izip
     write-host -nonewline "`nAdding base Offline bundle $izip ..."
     if ($basedepot = Add-EsxSoftwaredepot $izip) {
-        write-host -ForegroundColor Green " [OK]"
+        write-host -F Green " [OK]"
     } else {
-        write-host -ForegroundColor Red "`nFATAL ERROR: Cannot add VMware base Offline bundle!`n"
+        write-host -F Red "`nFATAL ERROR: Cannot add VMware base Offline bundle!`n"
         exit
     }
 }
@@ -247,9 +250,9 @@ if ($vft) {
     # Connect the V-Front Online depot
     write-host -nonewline "`nConnecting the V-Front Online depot ..."
     if ($vftdepot = Add-EsxSoftwaredepot $vftdepotURL) {
-        write-host -ForegroundColor Green " [OK]"
+        write-host -F Green " [OK]"
     } else {
-        write-host -ForegroundColor Red "`nFATAL ERROR: Cannot add the V-Front Online depot. Please check your internet connectivity and/or proxy settings!`n"
+        write-host -F Red "`nFATAL ERROR: Cannot add the V-Front Online depot. Please check your internet connectivity and/or proxy settings!`n"
         exit
     }
 }
@@ -260,10 +263,10 @@ if ($dpt -ne @()) {
 	for ($i=0; $i -lt $dpt.Length; $i++ ) {
 		write-host -nonewline ("`nConnecting additional depot " + $dpt[$i] + " ...")
 		if ($AddDpt += Add-EsxSoftwaredepot $dpt[$i]) {
-			write-host -ForegroundColor Green " [OK]"
+			write-host -F Green " [OK]"
 		} else {
-			write-host -ForegroundColor Red "`nFATAL ERROR: Cannot add Online depot or Offline bundle. In case of Online depot check your Internet"
-            write-host -ForegroundColor Red "connectivity and/or proxy settings! In case of Offline bundle check file name, format and permissions!`n"
+			write-host -F Red "`nFATAL ERROR: Cannot add Online depot or Offline bundle. In case of Online depot check your Internet"
+            write-host -F Red "connectivity and/or proxy settings! In case of Offline bundle check file name, format and permissions!`n"
 			exit
 		}
 	}
@@ -304,22 +307,22 @@ if ($iZip -and !($update)) {
 }
 
 if ($iplist.Length -eq 0) {
-    write-host -ForegroundColor Red " [FAILED]`n`nFATAL ERROR: No valid Imageprofile(s) found!"
+    write-host -F Red " [FAILED]`n`nFATAL ERROR: No valid Imageprofile(s) found!"
     if ($iZip) {
-        write-host -ForegroundColor Red "The input file is probably not a full ESXi base bundle.`n"
+        write-host -F Red "The input file is probably not a full ESXi base bundle.`n"
     }
     exit
 } else {
-    write-host -ForegroundColor Green " [OK]"
+    write-host -F Green " [OK]"
     $iplist = @( $iplist | Sort-Object -Descending -Property @{Expression={$_.Name.Substring(0,10)}},@{Expression={$_.CreationTime.Date}},Name )
 }
 
 # if -sip then display menu of available image profiles ...
 if ($sip) {
     if ($update) {
-        write-host "`nSelect Imageprofile to use for update:"
+        write-host -F Cyan "`nSelect Imageprofile to use for update:"
     } else {
-        write-host "`nSelect Base Imageprofile:"
+        write-host -F Cyan "`nSelect Base Imageprofile:"
     }
     write-host "-------------------------------------------"
     for ($i=0; $i -lt $iplist.Length; $i++ ) {
@@ -344,9 +347,9 @@ if ($update) {
     $CloneIP = $iplist[$idx]
 }
 
-write-host ("`nUsing Imageprofile " + $CloneIP.Name + " ...")
-write-host ("(dated " + $CloneIP.CreationTime + ", AcceptanceLevel: " + $CloneIP.AcceptanceLevel + ",")
-write-host ($CloneIP.Description + ")")
+write-host -F Cyan ("`nUsing Imageprofile " + $CloneIP.Name + " ...")
+write-host ("Dated " + $CloneIP.CreationTime + ", AcceptanceLevel: " + $CloneIP.AcceptanceLevel)
+write-host -F Yellow ("(" + $CloneIP.Description + ")")
 
 # If customization is required ...
 if ( ($pkgDir -ne "") -or $update -or ($load -ne @()) -or ($remove -ne @()) ) {
@@ -359,9 +362,9 @@ if ( ($pkgDir -ne "") -or $update -or ($load -ne @()) -or ($remove -ne @()) ) {
 
     # Update from Online depot profile
     if ($update) {
-        write-host ("`nUpdating with the VMware Imageprofile " + $UpdIP.Name + " ...")
-        write-host ("(dated " + $UpdIP.CreationTime + ", AcceptanceLevel: " + $UpdIP.AcceptanceLevel + ",")
-        write-host ($UpdIP.Description + ")")
+        write-host -F Cyan ("`nUpdating with the VMware Imageprofile " + $UpdIP.Name + " ...")
+        write-host ("Dated " + $UpdIP.CreationTime + ", AcceptanceLevel: " + $UpdIP.AcceptanceLevel)
+        write-host -F Yellow ("(" + $UpdIP.Description + ")")
         $diff = Compare-EsxImageprofile $MyProfile $UpdIP
         $diff.UpgradeFromRef | foreach {
             $uguid = $_
@@ -373,53 +376,53 @@ if ( ($pkgDir -ne "") -or $update -or ($load -ne @()) -or ($remove -ne @()) ) {
 
     # Loop over Offline bundles and VIB files
     if ($pkgDir -ne "") {
-        write-host "`nLoading Offline bundles and VIB files from" $pkgDir ...
+        write-host -F Cyan "`nLoading Offline bundles and VIB files from" $pkgDir ...
         foreach ($obundle in Get-Item $pkgDir\*.zip) {
             write-host -nonewline "   Loading" $obundle ...
             if ($ob = Add-EsxSoftwaredepot $obundle -ErrorAction SilentlyContinue) {
-                write-host -ForegroundColor Green " [OK]"
+                write-host -F Green " [OK]"
                 $ob | Get-EsxSoftwarePackage | foreach {
                     write-host -nonewline "      Add VIB" $_.Name $_.Version
                     AddVIB2Profile $_
                 }
             } else {
-                write-host -ForegroundColor Red " [FAILED]`n      Probably not a valid Offline bundle, ignoring."
+                write-host -F Red " [FAILED]`n      Probably not a valid Offline bundle, ignoring."
             }
         }
         foreach ($vibFile in Get-Item $pkgDir\*.vib) {
             write-host -nonewline "   Loading" $vibFile ...
             try {
                 $vib1 = Get-EsxSoftwarePackage -PackageUrl $vibFile -ErrorAction SilentlyContinue
-                write-host -ForegroundColor Green " [OK]"
+                write-host -F Green " [OK]"
                 write-host -nonewline "      Add VIB" $vib1.Name $vib1.Version
                 AddVIB2Profile $vib1
             } catch {
-                write-host -ForegroundColor Red " [FAILED]`n      Probably not a valid VIB file, ignoring."
+                write-host -F Red " [FAILED]`n      Probably not a valid VIB file, ignoring."
             }
         }
     }
     # Load additional packages from Online depots or Offline bundles
     if ($load -ne @()) {
-        write-host "`nLoad additional VIBs from Online depots ..."
+        write-host -F Cyan "`nLoad additional VIBs from Online depots ..."
         for ($i=0; $i -lt $load.Length; $i++ ) {
             if ($ovib = Get-ESXSoftwarePackage $load[$i] -Newest) {
                 write-host -nonewline "   Add VIB" $ovib.Name $ovib.Version
                 AddVIB2Profile $ovib
             } else {
-                write-host -ForegroundColor Red "   [ERROR] Cannot find VIB named" $load[$i] "!"
+                write-host -F Red "   [ERROR] Cannot find VIB named" $load[$i] "!"
             }
         }
     }
     # Remove selected VIBs
     if ($remove -ne @()) {
-        write-host "`nRemove selected VIBs from Imageprofile ..."
+        write-host -F Cyan "`nRemove selected VIBs from Imageprofile ..."
         for ($i=0; $i -lt $remove.Length; $i++ ) {
             write-host -nonewline "      Remove VIB" $remove[$i]
             try {
                 Remove-EsxSoftwarePackage -ImageProfile $MyProfile -SoftwarePackage $remove[$i] | Out-Null
-                write-host -ForegroundColor Green " [OK]"
+                write-host -F Green " [OK]"
             } catch {
-                write-host -ForegroundColor Red " [FAILED]`n      VIB does probably not exist or cannot be removed without breaking dependencies."
+                write-host -F Red " [FAILED]`n      VIB does probably not exist or cannot be removed without breaking dependencies."
             }
         }
     }
@@ -444,27 +447,31 @@ if ($nsc) { $cmd = $cmd + " -NoSignatureCheck" }
 $cmd = $cmd + " -Force"
 
 # Run the export:
-write-host -nonewline ("`nExporting the Imageprofile to " + $outFile + ". Please be patient ...")
+write-host -nonewline -F Cyan ("`nExporting the Imageprofile to " + $outFile + ". Please be patient ...")
 if ($test) {
-    write-host -ForegroundColor Yellow " [Skipped]"
+    write-host -F Yellow " [Skipped]"
 } else {
     write-host "`n"
     Invoke-Expression $cmd
 }
 
-write-host -ForegroundColor Green "`nAll done.`n"
+write-host -F Green "`nAll done.`n"
 
 # The main catch ...
 } catch {
-    write-host -ForegroundColor Red ("`n`nAn unexpected error occured:`n" + $Error[0])
-    write-host -ForegroundColor Red ("`nIf requesting support please be sure to include the log file`n   " + $log + "`n`n")
+    write-host -F Red ("`n`nAn unexpected error occured:`n" + $Error[0])
+    write-host -F Red ("`nIf requesting support please be sure to include the log file`n   " + $log + "`n`n")
 
 # The main cleanup
 } finally {
     cleanup
-    if (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir')) {
-        $finalLog = ($outDir + "\" + $MyProfile.Name + "-" + (get-date -Format yyyyMMddHHmm) + ".log")
+    if (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*zip*')) {
+    	$finalLog = ($outDir + "\" + $MyProfile.Name + ".zip" + "-" + (get-date -Format yyyyMMddHHmm) + ".log")
         Move-Item $log $finalLog -force
-        write-host ("(Log file moved to " + $finalLog + ")`n")
+    	write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
+      } elseif (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*iso*')) {
+    		$finalLog = ($outDir + "\" + $MyProfile.Name + ".iso" + "-" + (Get-Date -Format yyyyMMddHHmm) + ".log")
+        	Move-Item $log $finalLog -force
+        	write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
     }
 }
