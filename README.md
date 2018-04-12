@@ -15,8 +15,8 @@ This library is a collection of different scripts I've written for various use c
 * ### psappdeploytoolkit
 
 ## shell
-* ### bash
-  * ### vsm
+* ### [bash](https://github.com/virtualex-itv/itv-lib/tree/master/shell/bash)
+  * ### [vsm](https://github.com/virtualex-itv/itv-lib/tree/master/shell/bash/vsm)
   * ### pwsh
 
 ## txt
