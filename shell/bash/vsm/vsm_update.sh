@@ -30,11 +30,10 @@ sleep 2
 cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm	$1
 
 #Downloads script to link to cron.daily
-cd $HOME
-[ ! -f $HOME/vsm_update_cron.sh ] && wget -O vsm_update_cron.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_update_cron.sh && chmod +x vsm_update_cron.sh
+[ ! -f $HOME/vsm_cron.sh ] && wget -O $HOME/vsm_cron.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_cron.sh && chmod +x $HOME/vsm_cron.sh
 
 #Creates symbolic link for this script in cron
-[ ! -f /etc/cron.daily/vsm_update_cron.sh ] && sudo ln -fs $HOME/vsm_update_cron.sh /etc/cron.daily/
+[ ! -f /etc/cron.daily/vsm_cron.sh ] && sudo ln -fs $HOME/vsm_cron.sh /etc/cron.daily/
 
 #Adds cron job to run daily at 6AM
 ( crontab -l; echo "0 6 * * * /usr/local/bin/vsm.sh -y -mr --favorite -c" ) | sort - | uniq - | crontab -

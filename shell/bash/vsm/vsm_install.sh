@@ -59,7 +59,7 @@ fi
 [ ! -d aac-base ] && mkdir -pvm 755 aac-base
 
 wget -O vsm_update.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_update.sh
-wget -O vsm_update_cron.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_update_cron.sh
+wget -O vsm_cron.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_cron.sh
 
 chmod +x vsm_*.sh
 
@@ -72,7 +72,7 @@ chmod +x aac-base.install
 ./aac-base.install -u $1
 sudo ./aac-base.install -i vsm $1
 
-sudo ln -fs $PWD/vsm_update_cron.sh /etc/cron.daily/
+sudo ln -fs $PWD/vsm_cron.sh /etc/cron.daily/
 
 ( crontab -l; echo "0 6 * * * /usr/local/bin/vsm.sh -y -mr --favorite -c" ) | sort - | uniq - | crontab -
 
