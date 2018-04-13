@@ -47,7 +47,7 @@ param(
 
 # Constants
 $ScriptName = "ESXi-Customizer-PS"
-$ScriptVersion = "2.5.1"
+$ScriptVersion = "2.5.1a"
 $ScriptURL = "https://ESXi-Customizer-PS.v-front.de"
 
 $AccLevel = @{"VMwareCertified" = 1; "VMwareAccepted" = 2; "PartnerSupported" = 3; "CommunitySupported" = 4}
@@ -67,7 +67,7 @@ function AddVIB2Profile($vib) {
     If ($MyProfile.VibList -contains $vib) {
         write-host -F Yellow " [IGNORED, already added]"
     } else {
-        Add-EsxSoftwarePackage -SoftwarePackage $vib -Imageprofile $MyProfile -force -ErrorAction SilentlyContinue | Out-Null 
+        Add-EsxSoftwarePackage -SoftwarePackage $vib -Imageprofile $MyProfile -force -ErrorAction SilentlyContinue | Out-Null
         if ($?) {
             if ($ExVersion -eq $null) {
                 write-host -F Green " [OK, added]"
