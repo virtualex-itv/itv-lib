@@ -7,4 +7,4 @@
 #distributions.
 
 #Updates base files and reinstalls VSM
-cd /home/alex/aac-base; ./aac-base.install -u; ./aac-base.install -i vsm
+cd /home/alex/aac-base; ./aac-base.install -u; ./aac-base.install -i vsm America/New_York
