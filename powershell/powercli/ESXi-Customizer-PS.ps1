@@ -2,11 +2,11 @@
 #
 # ESXi-Customizer-PS.ps1 - a script to build a customized ESXi installation ISO using ImageBuilder
 #
-# Version:       2.5.1a
-# Author:        Andreas Peetz (ESXi-Customizer-PS@v-front.de)
-# Modified By:   Alex Lopez (https://ithinkvirtual.com)
-# Info/Tutorial: https://esxi-customizer-ps.v-front.de/
-# Vid-Tutorial:  https://ithinkvirtual.com/videos/create-a-custom-esxi-image-with-esxi-customizer-ps-script/
+# Version:        2.6.0
+# Author:         Andreas Peetz (ESXi-Customizer-PS@v-front.de)
+# Updated By:     Alex Lopez (info@ithinkvirtual.com)
+# Info/Tutorial:  https://esxi-customizer-ps.v-front.de/
+# Vid-Tutorial:   https://ithinkvirtual.com/videos/create-a-custom-esxi-image-with-esxi-customizer-ps-script/
 #
 # License:
 #
@@ -21,7 +21,7 @@
 #############################################################################################################################
 
 param(
-    [string]$iZip = "",
+    [string]$izip = "",
     [string]$pkgDir = "",
     [string]$outDir = $(Split-Path $MyInvocation.MyCommand.Path),
     [string]$ipname = "",
@@ -41,13 +41,14 @@ param(
     [switch]$v55 = $false,
     [switch]$v60 = $false,
     [switch]$v65 = $false,
+    [switch]$v67 = $false,
     [switch]$update = $false,
     [string]$log = ($env:TEMP + "\ESXi-Customizer-PS-" + $PID + ".log")
 )
 
 # Constants
 $ScriptName = "ESXi-Customizer-PS"
-$ScriptVersion = "2.5.1a"
+$ScriptVersion = "2.6.0"
 $ScriptURL = "https://ESXi-Customizer-PS.v-front.de"
 
 $AccLevel = @{"VMwareCertified" = 1; "VMwareAccepted" = 2; "PartnerSupported" = 3; "CommunitySupported" = 4}
@@ -111,7 +112,7 @@ function cleanup() {
 write-host -F Cyan ("`nThis is " + $ScriptName + " Version " + $ScriptVersion + " (visit " + $ScriptURL + " for more information!)")
 if ($help) {
     write-host "`nUsage:"
-    write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65] [-ozip] [-pkgDir <dir>]"
+    write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65|-v67] [-ozip] [-pkgDir <dir>]"
     write-host "                                [-outDir <dir>] [-vft] [-dpt depot1[,...]] [-load vib1[,...]] [-remove vib1[,...]]"
     write-host "                                [-log <file>] [-ipname <name>] [-ipdesc <desc>] [-ipvendor <vendor>] [-nsc] [-test]"
     write-host "`nOptional parameters:"
@@ -130,7 +131,7 @@ if ($help) {
     write-host "   -sip               : select an Imageprofile from the current list"
     write-host "                        (default = auto-select latest available standard profile)"
     write-host "   -v50 | -v51 | -v55 |"
-    write-host "   -v60 | -v65        : Use only ESXi 5.0/5.1/5.5/6.0/6.5 Imageprofiles as input, ignore other versions"
+    write-host "   -v60 | -v65 | -v67 : Use only ESXi 5.0/5.1/5.5/6.0/6.5/6.7 Imageprofiles as input, ignore other versions"
     write-host "   -nsc               : use -NoSignatureCheck with export"
     write-host "   -log <file>        : Use custom log file <file>"
     write-host "   -ipname <name>"
@@ -183,7 +184,7 @@ foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
 }
 
 # Parameter sanity check
-if ( ($v50 -and ($v51 -or $v55 -or $v60 -or $v65)) -or ($v51 -and ($v55 -or $v60 -or $v65)) -or ($v55 -and ($v60 -or $v65)) -or ($v60 -and $v65) ) {
+if ( ($v50 -and ($v51 -or $v55 -or $v60 -or $v65 -or $v67)) -or ($v51 -and ($v55 -or $v60 -or $v65 -or $v67)) -or ($v55 -and ($v60 -or $v65 -or $v67)) -or ($v60 -and ($v65 -or $v67)) -or ($v65 -and $v67) ) {
     write-host -F Yellow "`nWARNING: Multiple ESXi versions specified. Highest version will take precedence!"
 }
 if ($update -and ($izip -eq "")) {
@@ -199,7 +200,6 @@ if (!(Test-Path variable:PSVersionTable)) {
 $psv = $PSVersionTable.PSVersion | select Major,Minor
 $pcv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
 write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and PowerCLI version " + $pcv.Major + "." + $pcv.Minor + "." + $pcv.Build + " build " + $pcv.Revision )
-
 
 if ( ($pcv.major -lt 5) -or (($pcv.major -eq 5) -and ($pcv.minor -eq 0)) ) {
     write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 5.1 !`n"
@@ -275,35 +275,40 @@ if ($dpt -ne @()) {
 
 write-host -NoNewLine "`nGetting Imageprofiles, please wait ..."
 $iplist = @()
-if ($iZip -and !($update)) {
+if ($izip -and !($update)) {
     Get-EsxImageprofile -Softwaredepot $basedepot | foreach { $iplist += $_ }
 } else {
-    if ($v65) {
-        Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-    } else {
-        if ($v60) {
-            Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-        } else {
-            if ($v55) {
-                Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-            } else {
-                if ($v51) {
-                    Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                } else {
-                    if ($v50) {
-                        Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                    } else {
-                        # Workaround for http://kb.vmware.com/kb/2089217
-                        Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                        Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                        Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                        Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                        Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-                    }
-                }
-            }
-        }
-    }
+	if ($v67) {
+		Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+	} else {
+		if ($v65) {
+			Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+		} else {
+			if ($v60) {
+				Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+			} else {
+				if ($v55) {
+					Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+				} else {
+					if ($v51) {
+						Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+					} else {
+						if ($v50) {
+							Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+						} else {
+							# Workaround for http://kb.vmware.com/kb/2089217
+							Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+							Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+							Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+							Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+							Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+							Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 if ($iplist.Length -eq 0) {
