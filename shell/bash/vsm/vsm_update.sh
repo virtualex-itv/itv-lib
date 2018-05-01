@@ -4,7 +4,7 @@
 #
 #This script updates the aac-base files and reinstalls the Linux VMware Software Manager
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
-#distributions.  It also adds a script to cron jobs via symbolic links for daily updates
+#distributions.  It also adds a script to cron jobs via symbolic link for daily updates
 #of aac-base files and vsm.
 #
 # example: ./vsm_update.sh America/New_York
@@ -29,10 +29,22 @@ sleep 2
 #Updates base files and reinstalls VSM
 cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm	$1
 
-#Downloads script to link to cron.daily
-[ ! -f $HOME/vsm_cron.sh ] && wget -O $HOME/vsm_cron.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_cron.sh && chmod +x $HOME/vsm_cron.sh
+#Creates script to link to cron.daily
+[ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
+#!/bin/bash
+# Copyright (c) iThinkVirtual 2018
+# All rights reserved
+#
+#This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
+#(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
+#distributions.
 
-#Creates symbolic link for this script in cron
+#Updates base files and reinstalls VSM
+cd $HOME/aac-base; ./aac-base.install -u $1; ./aac-base.install -i vsm $1
+EOF
+} && chmod +x $HOME/vsm_cron.sh
+
+#Creates symbolic link for script in cron.daily
 [ ! -f /etc/cron.daily/vsm_cron.sh ] && sudo ln -fs $HOME/vsm_cron.sh /etc/cron.daily/vsm_cron.sh
 
 #Adds cron job to run daily at 6AM
