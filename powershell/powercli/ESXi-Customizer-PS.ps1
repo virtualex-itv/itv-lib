@@ -8,16 +8,6 @@
 # Info/Tutorial:  https://esxi-customizer-ps.v-front.de/
 # Vid-Tutorial:   https://ithinkvirtual.com/videos/create-a-custom-esxi-image-with-esxi-customizer-ps-script/
 #
-# License:
-#
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-#
-# A copy of the GNU General Public License is available at http://www.gnu.org/licenses/.
-#
 #############################################################################################################################
 
 param(
@@ -201,8 +191,8 @@ $psv = $PSVersionTable.PSVersion | select Major,Minor
 $pcv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
 write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and PowerCLI version " + $pcv.Major + "." + $pcv.Minor + "." + $pcv.Build + " build " + $pcv.Revision )
 
-if ( ($pcv.major -lt 5) -or (($pcv.major -eq 5) -and ($pcv.minor -eq 0)) ) {
-    write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 5.1 !`n"
+if ( ($pcv.major -lt 6) -or (($pcv.major -eq 6) -and ($pcv.minor -eq 5) -and ($pcv.build -lt 1)) ) {
+    write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 6.5.1 !`n"
     exit
 }
 
