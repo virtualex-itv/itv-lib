@@ -84,27 +84,14 @@ function cleanup() {
     if ($DefaultSoftwaredepots) { Remove-EsxSoftwaredepot $DefaultSoftwaredepots }
 }
 
-# Set up the screen
-#$pswindow = (get-host).ui.rawui
-#$newsize = $pswindow.buffersize
-#if ( $newsize.height -lt 3000) { $newsize.height = 3000 }
-#if ( $newsize.width -lt 120) { $newsize.width = 120 }
-#$pswindow.buffersize = $newsize
-#$newsize = $pswindow.windowsize
-#if ( $newsize.height -lt 50) { $newsize.height = ((get-host).UI.RawUI.MaxWindowSize.Height,50 | Measure -Minimum).Minimum }
-#if ( $newsize.width -lt 120) { $newsize.width = ((get-host).UI.RawUI.MaxWindowSize.Width,120 | Measure -Minimum).Minimum }
-#$pswindow.windowsize = $newsize
-#$pswindow.windowtitle = $ScriptName + " " + $ScriptVersion + " - " + $ScriptUrl
-#$pswindow.foregroundcolor = "White"
-#$pswindow.backgroundcolor = "Black"
-
 # Write info and help if requested
 write-host -F Cyan ("`nThis is " + $ScriptName + " Version " + $ScriptVersion + " (visit " + $ScriptURL + " for more information!)")
 if ($help) {
     write-host "`nUsage:"
-    write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65|-v67] [-ozip] [-pkgDir <dir>]"
-    write-host "                                [-outDir <dir>] [-vft] [-dpt depot1[,...]] [-load vib1[,...]] [-remove vib1[,...]]"
-    write-host "                                [-log <file>] [-ipname <name>] [-ipdesc <desc>] [-ipvendor <vendor>] [-nsc] [-test]"
+    write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65|-v67]"
+    write-host "                                [-ozip] [-pkgDir <dir>] [-outDir <dir>] [-vft] [-dpt depot1[,...]]"
+    write-host "                                [-load vib1[,...]] [-remove vib1[,...]] [-log <file>] [-ipname <name>]"
+    write-host "                                [-ipdesc <desc>] [-ipvendor <vendor>] [-nsc] [-test]"
     write-host "`nOptional parameters:"
     write-host "   -help              : display this help"
     write-host "   -izip <bundle>     : use the VMware Offline bundle <bundle> as input instead of the Online depot"
@@ -147,11 +134,13 @@ if ($help) {
 }
 
 # The main try ...
+$isModule = @{}
 try {
 
 # Check for and load required modules/snapins
 foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
     if (Get-Module -ListAvailable -Name $comp -ErrorAction:SilentlyContinue) {
+		$isModule[$comp] = $true
         if (!(Get-Module -Name $comp -ErrorAction:SilentlyContinue)) {
             if (!(Import-Module -PassThru -Name $comp -ErrorAction:SilentlyContinue)) {
                 write-host -F Red "`nFATAL ERROR: Failed to import the $comp module!`n"
@@ -159,6 +148,7 @@ foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
             }
         }
     } else {
+		$isModule[$comp] = $false
         if (Get-PSSnapin -Registered -Name $comp -ErrorAction:SilentlyContinue) {
             if (!(Get-PSSnapin -Name $comp -ErrorAction:SilentlyContinue)) {
                 if (!(Add-PSSnapin -PassThru -Name $comp -ErrorAction:SilentlyContinue)) {
@@ -188,12 +178,16 @@ if (!(Test-Path variable:PSVersionTable)) {
     exit
 }
 $psv = $PSVersionTable.PSVersion | select Major,Minor
-$pcv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
-write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and PowerCLI version " + $pcv.Major + "." + $pcv.Minor + "." + $pcv.Build + " build " + $pcv.Revision )
-
-if ( ($pcv.major -lt 6) -or (($pcv.major -eq 6) -and ($pcv.minor -eq 5) -and ($pcv.build -lt 1)) ) {
-    write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 6.5.1 !`n"
-    exit
+if ($isModule["VMware.VimAutomation.Core"]) {
+	$pcmv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
+	write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and VMware PowerCLI version " + $pcmv.Major + "." + $pcmv.Minor + "." + $pcmv.Build + " build " + $pcmv.Revision )
+} else {
+	$pcv = Get-PowerCLIVersion | select major,minor,UserFriendlyVersion
+	write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and " + $pcv.UserFriendlyVersion)
+	if ( ($pcv.major -lt 5) -or (($pcv.major -eq 5) -and ($pcv.minor -eq 0)) ) {
+		write-host -F Red "`nFATAL ERROR: This script requires at least PowerCLI version 5.1 !`n"
+		exit
+	}
 }
 
 if ($update) {
