@@ -55,5 +55,4 @@ EOF
 
 clear
 
-echo  "${magenta}VSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}"
-echo ""
+echo -e "${magenta}VSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}\n"

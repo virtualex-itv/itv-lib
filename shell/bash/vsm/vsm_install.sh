@@ -97,5 +97,4 @@ blink=`tput blink`
 magenta=`tput setaf 5`
 nc=`tput sgr0`
 
-echo "${magenta}VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}"
-echo ""
+echo -e "${magenta}VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}\n"
