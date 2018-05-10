@@ -76,6 +76,9 @@ sudo ./aac-base.install -i vsm $1
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
+#Kills any running vsm processes
+pkill -9 vsm
+
 #Updates base files and reinstalls VSM
 cd $HOME/aac-base; ./aac-base.install -u $1; ./aac-base.install -i vsm $1
 EOF
@@ -94,5 +97,4 @@ blink=`tput blink`
 magenta=`tput setaf 5`
 nc=`tput sgr0`
 
-echo "${magenta}VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}"
-echo ""
+echo -e "${magenta}VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}\n"
