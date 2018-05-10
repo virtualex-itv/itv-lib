@@ -76,6 +76,9 @@ sudo ./aac-base.install -i vsm $1
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
+#Kills any running vsm processes
+pkill -9 vsm
+
 #Updates base files and reinstalls VSM
 cd $HOME/aac-base; ./aac-base.install -u $1; ./aac-base.install -i vsm $1
 EOF
