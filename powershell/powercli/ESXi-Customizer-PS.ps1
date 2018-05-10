@@ -448,7 +448,7 @@ write-host -F Green "`nAll done.`n"
 
 # The main catch ...
 } catch {
-    write-host -F Red ("`n`nAn unexpected error occured:`n" + $Error[0])
+    write-host -F Red ("`n`nAn unexpected error occurred:`n" + $Error[0])
     write-host -F Red ("`nIf requesting support please be sure to include the log file`n   " + $log + "`n`n")
 
 # The main cleanup
