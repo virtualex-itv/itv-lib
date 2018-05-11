@@ -6,20 +6,20 @@
 
 This library is a collection of different scripts I've written for various use cases within my own environments to make life easier through scripting and automation.  I blog about various topics, mainly in the VMware virtualization space, as I tinker with different virtual appliances, tools, and methods over at [*iThinkVirtual.com*](https://ithinkvirtual.com "Check it out!").
 
-## batch
+## *[batch](https://github.com/virtualex-itv/itv-lib/tree/master/batch)*
 * ### [bat](https://github.com/virtualex-itv/itv-lib/tree/master/batch/bat)
 
-## powershell
+## *[powershell](https://github.com/virtualex-itv/itv-lib/tree/master/powershell)*
 * ### [powercli](https://github.com/virtualex-itv/itv-lib/tree/master/powershell/powercli)
 * ### [powershell](https://github.com/virtualex-itv/itv-lib/tree/master/powershell/powershell)
-* ### psappdeploytoolkit
+* ### [psappdeploytoolkit](https://github.com/virtualex-itv/itv-lib/tree/master/powershell/psappdeploytoolkit)
 
-## shell
+## *[shell](https://github.com/virtualex-itv/itv-lib/tree/master/shell)*
 * ### [bash](https://github.com/virtualex-itv/itv-lib/tree/master/shell/bash)
   * ### [vsm](https://github.com/virtualex-itv/itv-lib/tree/master/shell/bash/vsm)
-  * ### pwsh
+  * ### [pwsh](https://github.com/virtualex-itv/itv-lib/tree/master/shell/bash/pwsh)
 
-## txt
+## *[txt](https://github.com/virtualex-itv/itv-lib/tree/master/txt)*
 * ### [diskpart](https://github.com/virtualex-itv/itv-lib/tree/master/txt/diskpart)
 
 
