@@ -12,8 +12,8 @@
 
 # Define Variables
 $Cluster = "Cluster"
-#$viburl = "http://download3.vmware.com/software/vmw-tools/esxui/esxui-signed-7119706.vib"
-$viburl = "/vmfs/volumes/NFS01/Patches/VIBs/6.5/esxui-signed-7119706.vib"
+$viburl = "http://download3.vmware.com/software/vmw-tools/esxui/esxui-signed-latest.vib"
+$viburl = "/vmfs/volumes/NFS01/Patches/VIBs/esxui-signed-latest.vib"
 $vcenter = "vcsa.lab.edu"
 $cred = Get-Credential
 $nosigcheck = $true
@@ -27,13 +27,13 @@ Connect-VIServer -Server $vcenter -Credential $cred
 # Get each host in specified cluster that meets criteria
 Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.ConnectionState -eq "Connected" } | foreach {
 
-    Write-Host "Preparing $($_.Name) for esxcli" -F Yellow
+    Write-Host "`nPreparing $($_.Name) for esxcli" -F Yellow
 
     $esxcli = Get-EsxCli -VMHost $_ -V2
 
     # Update VIBs
     Write-Host "Updating VIB on $($_.Name)" -F Yellow
-		
+
 		# Create Update Arguments
 		$updParm = @{
 			viburl = $viburl
@@ -42,9 +42,9 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			maintenancemode = $maintenancemode
 			force = $force
 		}
-	
-	$action = $esxcli.software.vib.update.Invoke($insParm)
 
-    # Verify VIB updated successfully
-    if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
+	$action = $esxcli.software.vib.update.Invoke($updParm)
+
+	# Verify VIB updated successfully
+	if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }

@@ -21,18 +21,17 @@ Connect-VIServer -Server $vcenter -Credential $cred
 # Get each host in specified cluster that meets criteria
 Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.ConnectionState -eq "Connected" } | foreach {
 
-    Write-Host "Preparing $($_.Name) for esxcli" -F Yellow
+	Write-Host "`nPreparing $($_.Name) for esxcli" -F Yellow
 
-    $esxcli = Get-EsxCli -VMHost $_ -V2
+	$esxcli = Get-EsxCli -VMHost $_ -V2
 
-    # Get ImageProfile
-    Write-Host "Checking ImageProfile on $($_.Name)" -F Yellow
+	# Get ImageProfile
+	Write-Host "Checking ImageProfile on $($_.Name)" -F Yellow
 	
 	$action = ($esxcli.software.profile.get.Invoke()) | select acceptancelevel,creationtime,description,modificationtime,name,statelessready,vendor
 
-    # Display ImageProfile information
-	Write-Host ""
-    Write-Host "AcceptanceLevel	:	"	$action.AcceptanceLevel
+	# Display ImageProfile information
+	Write-Host "`nAcceptanceLevel	:	"	$action.AcceptanceLevel
 	Write-Host "CreationTime	:	"	$action.CreationTime
 	Write-Host "Description	:	"		$action.Description
 	Write-Host "ModificationTime:	"	$action.ModificationTime
@@ -40,6 +39,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 	Write-Host "StatelessReady	:	"	$action.StatelessReady
 	Write-Host "VIBs		:	"		$action.VIBs
 	Write-Host "Vendor		:	"		$action.Vendor
-	Write-Host ""
-
 }
