@@ -13,7 +13,7 @@
 # Define Variables
 $Cluster = "Cluster"
 $viburl = "http://download3.vmware.com/software/vmw-tools/esxui/esxui-signed-latest.vib"
-$viburl = "/vmfs/volumes/NFS01/Patches/VIBs/esxui-signed-latest.vib"
+#$viburl = "/vmfs/volumes/NFS01/Patches/VIBs/esxui-signed-latest.vib"
 $vcenter = "vcsa.lab.edu"
 $cred = Get-Credential
 $nosigcheck = $true
