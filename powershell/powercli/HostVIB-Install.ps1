@@ -33,7 +33,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
     # Install VIBs
     Write-Host "Installing VIB on $($_.Name)" -F Yellow
-		
+
 		# Create Installation Arguments
 		$insParm = @{
 			viburl = $viburl
@@ -42,9 +42,12 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			maintenancemode = $maintenancemode
 			force = $force
 		}
-	
+
 	$action = $esxcli.software.vib.install.Invoke($insParm)
 
 	# Verify VIB installed successfully
 	if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }
+
+# Disconnect from vCenter
+Disonnect-VIServer -Server * -Force

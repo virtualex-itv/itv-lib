@@ -45,3 +45,6 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 	# Verify VIB removed successfully
 	if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }
+
+# Disconnect from vCenter
+Disonnect-VIServer -Server * -Force

@@ -34,7 +34,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
     # Update ImageProfile
     Write-Host "Updating ImageProfile on $($_.Name)" -F Yellow
-		
+
 		# Create Firewall Arguments
 		$enParm = @{
 			enabled = $true
@@ -56,13 +56,16 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			maintenancemode = $maintenancemode
 			force = $force
 		}
-	
+
 	$enaction = $esxcli.network.firewall.ruleset.set.Invoke($enParm)
-	
+
 	$action = $esxcli.software.profile.update.Invoke($updParm)
-	
+
 	$disaction = $esxcli.network.firewall.ruleset.set.Invoke($disParm)
 
 	# Verify ImgageProfile updated successfully
 	if ($action.Message -eq "Operation finished successfully."){Write-Host "Action Completed successfully on $($_.Name)" -F Green} else {Write-Host $action.Message -F Red}
 }
+
+# Disconnect from vCenter
+Disonnect-VIServer -Server * -Force

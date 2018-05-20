@@ -40,3 +40,6 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 	Write-Host "VIBs		:	"		$action.VIBs
 	Write-Host "Vendor		:	"		$action.Vendor
 }
+
+# Disconnect from vCenter
+Disonnect-VIServer -Server * -Force

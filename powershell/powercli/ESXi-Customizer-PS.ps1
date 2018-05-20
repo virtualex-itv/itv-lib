@@ -454,13 +454,13 @@ write-host -F Green "`nAll done.`n"
 # The main cleanup
 } finally {
     cleanup
-    if (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*zip*')) {
-    	$finalLog = ($outDir + "\" + $MyProfile.Name + ".zip" + "-" + (get-date -Format yyyyMMddHHmm) + ".log")
-        Move-Item $log $finalLog -force
-    	write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
-      } elseif (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*iso*')) {
-    		$finalLog = ($outDir + "\" + $MyProfile.Name + ".iso" + "-" + (Get-Date -Format yyyyMMddHHmm) + ".log")
-        	Move-Item $log $finalLog -force
-        	write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
-    }
+	if (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*zip*')) {
+		$finalLog = ($outDir + "\" + $MyProfile.Name + ".zip" + "-" + (get-date -Format yyyyMMddHHmm) + ".log")
+		Move-Item $log $finalLog -force
+		write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
+	} elseif (!($PSBoundParameters.ContainsKey('log')) -and $PSBoundParameters.ContainsKey('outDir') -and ($outFile -like '*iso*')) {
+			$finalLog = ($outDir + "\" + $MyProfile.Name + ".iso" + "-" + (Get-Date -Format yyyyMMddHHmm) + ".log")
+			Move-Item $log $finalLog -force
+			write-host -F DarkGray ("(Log file moved to " + $finalLog + ")`n")
+		}
 }
