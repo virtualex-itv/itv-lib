@@ -27,7 +27,7 @@ aac_new=$(ls ./aac-base/aac-base.* 2> /dev/null | wc -l)
 sleep 2
 
 #Updates base files and reinstalls VSM
-cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm	$1
+cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm $1
 
 #Creates script to link to cron.daily
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
@@ -43,7 +43,9 @@ cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm	$1
 pkill -9 vsm
 
 #Updates base files and reinstalls VSM
-cd $HOME/aac-base; ./aac-base.install -u $1; ./aac-base.install -i vsm $1
+cd $HOME/aac-base
+./aac-base.install -u $1
+./aac-base.install -i vsm $1
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 

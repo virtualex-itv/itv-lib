@@ -80,7 +80,9 @@ sudo ./aac-base.install -i vsm $1
 pkill -9 vsm
 
 #Updates base files and reinstalls VSM
-cd $HOME/aac-base; ./aac-base.install -u $1; ./aac-base.install -i vsm $1
+cd $HOME/aac-base
+./aac-base.install -u $1
+./aac-base.install -i vsm $1
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 
