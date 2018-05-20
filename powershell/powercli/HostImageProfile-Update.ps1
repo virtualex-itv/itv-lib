@@ -40,12 +40,12 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			enabled = $true
 			rulesetid = "httpClient"
 		}
-		
+
 		$disParm = @{
 			enabled = $false
 			rulesetid = "httpClient"
 		}
-		
+
 		# Create Update Arguments
 		$updParm = @{
 			allowdowngrades = $allowdowngrades
@@ -68,4 +68,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 }
 
 # Disconnect from vCenter
-Disonnect-VIServer -Server * -Force
+Disconnect-VIServer -Server * -Force

@@ -27,7 +27,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
 	# Get ImageProfile
 	Write-Host "Checking ImageProfile on $($_.Name)" -F Yellow
-	
+
 	$action = ($esxcli.software.profile.get.Invoke()) | select acceptancelevel,creationtime,description,modificationtime,name,statelessready,vendor
 
 	# Display ImageProfile information
@@ -42,4 +42,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 }
 
 # Disconnect from vCenter
-Disonnect-VIServer -Server * -Force
+Disconnect-VIServer -Server * -Force

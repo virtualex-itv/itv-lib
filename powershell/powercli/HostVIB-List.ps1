@@ -28,9 +28,9 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
 	# List VIBs
 	Write-Host "Listing VIB on $($_.Name)" -F Yellow
-	
+
 	$action = $esxcli.software.vib.list.Invoke() | where { $_.Name -like $vibname }
-	
+
 	# Display VIB information
 	Write-Host "`nAcceptanceLevel	:	"	$action.AcceptanceLevel
 	Write-Host "ID		:	"	$action.ID
@@ -42,4 +42,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 }
 
 # Disconnect from vCenter
-Disonnect-VIServer -Server * -Force
+Disconnect-VIServer -Server * -Force

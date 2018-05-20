@@ -31,7 +31,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 
     # Install VIBs
     Write-Host "Removing VIB from $($_.Name)" -F Yellow
-		
+
 		# Create Removal Arguments
 		$remParm = @{
 			vibname = $vibname
@@ -39,7 +39,7 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 			force = $force
 			dryrun = $dryrun
 		}
-	
+
 	$action = $esxcli.software.vib.remove.Invoke($remParm)
 
 	# Verify VIB removed successfully
@@ -47,4 +47,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 }
 
 # Disconnect from vCenter
-Disonnect-VIServer -Server * -Force
+Disconnect-VIServer -Server * -Force
