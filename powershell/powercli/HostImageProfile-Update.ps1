@@ -68,4 +68,4 @@ Get-VMhost -Location $Cluster | where { $_.PowerState -eq "PoweredOn" -and $_.Co
 }
 
 # Disconnect from vCenter
-Disconnect-VIServer -Server * -Force
+Disconnect-VIServer -Server * -Force -Confirm:$false
