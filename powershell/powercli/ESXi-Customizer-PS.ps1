@@ -4,7 +4,7 @@
 #
 # Version:        2.6.0
 # Author:         Andreas Peetz (ESXi-Customizer-PS@v-front.de)
-# Updated By:     Alex Lopez (info@ithinkvirtual.com)
+# Contributor:    Alex Lopez (info@ithinkvirtual.com)
 # Info/Tutorial:  https://esxi-customizer-ps.v-front.de/
 # Vid-Tutorial:   https://ithinkvirtual.com/videos/create-a-custom-esxi-image-with-esxi-customizer-ps-script/
 #
@@ -33,6 +33,7 @@ param(
     [switch]$v65 = $false,
     [switch]$v67 = $false,
     [switch]$update = $false,
+    [string]$pzip = "",
     [string]$log = ($env:TEMP + "\ESXi-Customizer-PS-" + $PID + ".log")
 )
 
@@ -51,6 +52,20 @@ $vftdepotURL = "https://vibsdepot.v-front.de/"
 function AddVIB2Profile($vib) {
     $AddVersion = $vib.Version
     $ExVersion = ($MyProfile.VibList | where { $_.Name -eq $vib.Name }).Version
+    
+    # Check for vib replacements
+    $ExName = ""
+    if ($ExVersion -eq $null) {
+        foreach ($replaces in $vib.replaces) {
+            $ExVib = $MyProfile.VibList | where { $_.Name -eq $replaces }
+            if ($ExVib -ne $null) {
+                $ExName = $ExVib.Name + " "
+                $ExVersion = $ExVib.Version
+                break
+            }
+        }
+    }
+    
     if ($AccLevel[$vib.AcceptanceLevel.ToString()] -gt $AccLevel[$MyProfile.AcceptanceLevel.ToString()]) {
         write-host -F Yellow -nonewline (" [New AcceptanceLevel: " + $vib.AcceptanceLevel + "]")
         $MyProfile.AcceptanceLevel = $vib.AcceptanceLevel
@@ -63,7 +78,7 @@ function AddVIB2Profile($vib) {
             if ($ExVersion -eq $null) {
                 write-host -F Green " [OK, added]"
             } else {
-                write-host -F Yellow (" [OK, replaced " + $ExVersion + "]")
+                write-host -F Green (" [OK, replaced " + $ExName + $ExVersion + "]")
             }
         } else {
             write-host -F Red " [FAILED, invalid package?]"
@@ -88,7 +103,7 @@ function cleanup() {
 write-host -F Cyan ("`nThis is " + $ScriptName + " Version " + $ScriptVersion + " (visit " + $ScriptURL + " for more information!)")
 if ($help) {
     write-host "`nUsage:"
-    write-host "   ESXi-Customizer-PS [-help] | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65|-v67]"
+    write-host "  ESXi-Customizer-PS [-help]  | [-izip <bundle> [-update]] [-sip] [-v50|-v51|-v55|-v60|-v65|-v67]"
     write-host "                                [-ozip] [-pkgDir <dir>] [-outDir <dir>] [-vft] [-dpt depot1[,...]]"
     write-host "                                [-load vib1[,...]] [-remove vib1[,...]] [-log <file>] [-ipname <name>]"
     write-host "                                [-ipdesc <desc>] [-ipvendor <vendor>] [-nsc] [-test]"
@@ -97,6 +112,7 @@ if ($help) {
     write-host "   -izip <bundle>     : use the VMware Offline bundle <bundle> as input instead of the Online depot"
     write-host "   -update            : only with -izip, updates a local bundle with an ESXi patch from the VMware Online depot,"
     write-host "                        combine this with the matching ESXi version selection switch"
+    write-host "   -pzip              : use an Offline patch bundle instead of the Online depot with -update."
     write-host "   -pkgDir <dir>      : local directory of Offline bundles and/or VIB files to add (if any, no default)"
     write-host "   -ozip              : output an Offline bundle instead of an installation ISO"
     write-host "   -outDir <dir>      : directory to store the customized ISO or Offline bundle (the default is the"
@@ -134,6 +150,7 @@ if ($help) {
 }
 
 # The main try ...
+
 $isModule = @{}
 try {
 
@@ -178,6 +195,7 @@ if (!(Test-Path variable:PSVersionTable)) {
     exit
 }
 $psv = $PSVersionTable.PSVersion | select Major,Minor
+
 if ($isModule["VMware.VimAutomation.Core"]) {
 	$pcmv = (Get-Module VMware.PowerCLI).Version | select Major,Minor,Build,Revision
 	write-host -F Cyan ("`nRunning with PowerShell version " + $psv.Major + "." + $psv.Minor + " and VMware PowerCLI version " + $pcmv.Major + "." + $pcmv.Minor + "." + $pcmv.Build + " build " + $pcmv.Revision )
@@ -210,9 +228,13 @@ if ($update) {
     }
 }
 
+if ($update -and $pzip -ne "") {
+   $vmwdepotURL = $pZip
+}
+
 if (($izip -eq "") -or $update) {
     # Connect the VMware ESXi base depot
-    write-host -nonewline "`nConnecting the VMware ESXi Online depot ..."
+    write-host -nonewline "`nConnecting the VMware ESXi Software depot ..."
     if ($basedepot = Add-EsxSoftwaredepot $vmwdepotURL) {
         write-host -F Green " [OK]"
     } else {
@@ -250,7 +272,7 @@ if ($dpt -ne @()) {
 			write-host -F Green " [OK]"
 		} else {
 			write-host -F Red "`nFATAL ERROR: Cannot add Online depot or Offline bundle. In case of Online depot check your Internet"
-            write-host -F Red "connectivity and/or proxy settings! In case of Offline bundle check file name, format and permissions!`n"
+			write-host -F Red "connectivity and/or proxy settings! In case of Offline bundle check file name, format and permissions!`n"
 			exit
 		}
 	}
