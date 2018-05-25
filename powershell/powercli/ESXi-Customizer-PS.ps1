@@ -229,7 +229,7 @@ if ($update) {
 }
 
 if ($update -and $pzip -ne "") {
-   $vmwdepotURL = $pZip
+   $vmwdepotURL = $pzip
 }
 
 if (($izip -eq "") -or $update) {
