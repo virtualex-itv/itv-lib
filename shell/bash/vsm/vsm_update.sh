@@ -40,7 +40,7 @@ cd $HOME/aac-base; ./aac-base.install -u $1; sudo ./aac-base.install -i vsm $1
 #distributions.
 
 #Kills any running vsm processes
-pkill -9 vsm
+pkill -9 vsm.sh
 
 #Updates base files and reinstalls VSM
 cd $HOME/aac-base
