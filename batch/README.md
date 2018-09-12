@@ -1,7 +1,3 @@
----
-layout: default
----
-
 <p align="center"><img src="http://ithinkvirtual.com/wp-content/uploads/2018/03/batch.png"></p>
 
 
