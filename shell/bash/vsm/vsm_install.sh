@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018
+# Copyright (c) iThinkVirtual 2018-2019
 # All rights reserved
 #
 #This script downloads and installs the Linux verison of VMware Software Manager (VSM)
@@ -86,7 +86,7 @@ cd $HOME/aac-base
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 
-sudo ln -fs $PWD/vsm_cron.sh /etc/cron.daily/vsm_cron.sh
+sudo ln -fs $HOME/vsm_cron.sh /etc/cron.daily/vsm_cron.sh
 
 wget -O $HOME/vsm_update.sh https://raw.githubusercontent.com/virtualex-itv/itv-lib/master/shell/bash/vsm/vsm_update.sh && chmod +x $HOME/vsm_update.sh
 
