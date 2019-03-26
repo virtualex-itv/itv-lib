@@ -1,6 +1,8 @@
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018
+# Copyright (c) iThinkVirtual 2018-2019
 # All rights reserved
+#
+# vim: tabstop=4 shiftwidth=4
 #
 #This script updates the aac-base files and reinstalls the Linux VMware Software Manager
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux

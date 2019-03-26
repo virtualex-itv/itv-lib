@@ -2,6 +2,8 @@
 # Copyright (c) iThinkVirtual 2018-2019
 # All rights reserved
 #
+# vim: tabstop=4 shiftwidth=4
+#
 #This script downloads and installs the Linux verison of VMware Software Manager (VSM)
 #created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.  It has some added intelligence around what to download along with picking
@@ -12,7 +14,6 @@
 # Requires:
 # wget
 #
-# vim: tabstop=4 shiftwidth=4
 #
 # example: ./vsm_install.sh America/New_York
 
