@@ -40,6 +40,55 @@ function findos() {
 	fi
 }
 
+function usage() {
+	echo "$0 [-h|--help][-u|--user user][timezone]"
+}
+
+while [[ $# -gt 0 ]]
+do
+	key="$1"
+	case "$key" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-u|--user)
+			us=$2
+			shift
+			;;
+		*)
+			tz=$1
+			;;
+	esac
+	shift
+done
+
+doit=1
+if [ Z"$us" != Z"" ]
+then
+	grep ${us}: /etc/passwd >& /dev/null
+	if [ $? -ne 0 ]
+	then
+		doit=0
+	fi
+else
+	# are we root?
+	us=`id -u`
+	if [ $us -eq 0 ]
+	then
+		doit=0
+	else
+		doit=1
+	fi
+fi
+
+if [ $us -eq 0 ] || [ Z"$us" = Z"root" ]
+then
+	echo "Error: Requires a valid non-root username as an argument"
+	usage
+	exit
+fi
+
 theos=''
 
 findos
@@ -65,8 +114,14 @@ wget -O aac-base.install https://raw.githubusercontent.com/Texiwill/aac-lib/mast
 
 chmod +x aac-base.install
 
-./aac-base.install -u $1
-sudo ./aac-base.install -i vsm $1
+if [ Z"$us" != "" ]
+then
+	./aac-base.install -u --user $us $tz
+	sudo ./aac-base.install -i vsm --user $us $tz
+else
+	./aac-base.install -u $tz
+	sudo ./aac-base.install -i vsm $tz
+fi
 
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
@@ -82,8 +137,8 @@ pkill -9 vsm.sh
 
 #Updates base files and reinstalls VSM
 cd $HOME/aac-base
-./aac-base.install -u $1
-./aac-base.install -i vsm $1
+./aac-base.install -u $tz
+./aac-base.install -i vsm $tz
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 
