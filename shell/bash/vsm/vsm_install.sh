@@ -17,6 +17,26 @@
 #
 # example: ./vsm_install.sh America/New_York
 
+# on-screen colors
+function colorecho() {
+# https://tinyurl.com/prompt-color-using-tput
+    str=$1
+    col=$2
+    docol=1
+    if [ Z"$2" = Z"" ]
+    then
+        docol=0
+    fi
+    if [ $docol -eq 1 ]
+    then
+        color=`tput setaf $col`
+		nc=`tput sgr0`
+		echo ${color}${str}${nc}
+    else
+        echo ${str}
+    fi
+}
+
 function findos() {
 	if [ -e /etc/os-release ]
 	then
@@ -82,9 +102,9 @@ else
 	fi
 fi
 
-if [ $us -eq 0 ] || [ Z"$us" = Z"root" ]
+if [ $doit -eq 0 ] || [ Z"$us" = Z"root" ]
 then
-	echo "Error: Requires a valid non-root username as an argument"
+	colorecho "Error: Requires a valid non-root username to execute script." 1
 	usage
 	exit
 fi
@@ -125,7 +145,7 @@ fi
 
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018
+# Copyright (c) iThinkVirtual 2018-2019
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
@@ -150,9 +170,4 @@ wget -O $HOME/vsm_update.sh https://raw.githubusercontent.com/virtualex-itv/itv-
 
 clear
 
-bold=`tput bold`
-blink=`tput blink`
-magenta=`tput setaf 5`
-nc=`tput sgr0`
-
-echo -e "${magenta}VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}\n"
+colorecho -e "$VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
