@@ -11,20 +11,32 @@
 #
 # example: ./vsm_update.sh America/New_York
 
-bold=`tput bold`
-blink=`tput blink`
-red=`tput setaf 1`
-green=`tput setaf 2`
-yellow=`tput setaf 3`
-magenta=`tput setaf 5`
-nc=`tput sgr0`
+# on-screen colors
+function colorecho() {
+# https://tinyurl.com/prompt-color-using-tput
+    str=$1
+    col=$2
+    docol=1
+    if [ Z"$2" = Z"" ]
+    then
+        docol=0
+    fi
+    if [ $docol -eq 1 ]
+    then
+        color=`tput setaf $col`
+		nc=`tput sgr0`
+		echo ${color}${str}${nc}
+    else
+        echo ${str}
+    fi
+}
 
-[ ! -d aac-base ] && mkdir -pvm 755 aac-base && echo "${green}Folder created.${nc}" || echo "${yellow}Folder already exists${nc}"
+[ ! -d aac-base ] && mkdir -pvm 755 aac-base && colorecho "Folder created." 2 || colorecho "Folder already exists." 3
 
 aac_old=$(ls aac-base.* 2> /dev/null | wc -l)
 aac_new=$(ls ./aac-base/aac-base.* 2> /dev/null | wc -l)
 
-[ **"$aac_old" != "0"** ] && [ **"$aac_new" = "0"** ] && mv aac-base.* aac-base && echo "${green}Files moved.${nc}" || echo "${yellow}Files already moved to $HOME/aac-base${nc}"
+[ **"$aac_old" != "0"** ] && [ **"$aac_new" = "0"** ] && mv aac-base.* aac-base && colorecho "Files moved." 2 || colorecho "Files already moved to $HOME/aac-base." 3
 
 sleep 2
 
@@ -59,4 +71,4 @@ EOF
 
 clear
 
-echo -e "${magenta}VSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)${nc}\n"
+colorecho "VSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
