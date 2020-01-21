@@ -12,8 +12,8 @@
 #
 # example: ./inst_open-vm-tools.sh
 
-build="11.0.1"
-latestovt="open-vm-tools-11.0.1-14773994"
+build="11.0.5"
+latestovt="open-vm-tools-11.0.5-15389592"
 
 # on-screen colors
 function colorecho() {
