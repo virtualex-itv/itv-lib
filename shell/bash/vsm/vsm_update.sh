@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018-2019
+# Copyright (c) iThinkVirtual 2018-2020
 # All rights reserved
 #
 # vim: tabstop=4 shiftwidth=4
