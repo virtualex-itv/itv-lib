@@ -35,26 +35,23 @@ function findos {
 				theos=`cut -d' ' -f1 < /etc/redhat-release | tr [:upper:] [:lower:]`
 		elif [ -e /etc/fedora-release ]; then
 				theos=`cut -d' ' -f1 < /etc/fedora-release | tr [:upper:] [:lower:]`
-		elif [ -e /etc/debian-release ]; then
-				theos=`cut -d' ' -f1 < /etc/debian-release | tr [:upper:] [:lower:]`
-		else
-		# Mac OS
-		uname -a | grep Darwin  >& /dev/null
-		if [ $? -eq 0 ]; then
-				theos="macos"
 		else
 				colorecho "Do not know this operating system." 1
 				theos="unknown"; fi
-		fi
 }
 
 # find os versions
 function findversion {
 		thefile=""
-		theofile=""
 		major=0
 		minor=0
 		async=0
+		osrel=0
+		
+		if [ -e /etc/os-release ]; then
+				. //etc/os-release
+				osrel=1
+		fi
 		for x in /etc/centos-release /etc/redhat-release /etc/fedora-release
 		do
 				if [ -e $x ]; then
@@ -62,26 +59,20 @@ function findversion {
 						break
 				fi
 		done
+		full=''
 		if [ Z"$thefile" != Z"" ]; then
-		full=`cat $thefile| tr -dc '0-9.'`
-		major=`echo $full | cut -d\. -f1`
-		minor=`echo $full | cut -d\. -f2`
-		async=`echo $full | cut -d\. -f3`
+				full=`cat $thefile| tr -dc '0-9.'`
+		elif [ $osrel -eq 1 ]; then
+				full=$VERSION_ID
 		fi
-		# For Ubuntu
-		for y in /etc/os-release
-		do
-				if [ -e $y ]; then
-						theofile="$y"
-						break
-				fi
-		done
-		if [ Z"theofile" != Z"" ]; then
-		verid=`echo $VERSION_ID`
+		if [ Z"$full" != Z"" ]; then
+				major=`echo $full | cut -d\. -f1`
+				minor=`echo $full | cut -d\. -f2`
+				async=`echo $full | cut -d\. -f3`
 		fi
 }
 
-# prompt to reboot
+# reboot prompt
 function rebprompt {
 		a="" 
 		while [ Z"$a" = Z"" ]; do
@@ -114,13 +105,13 @@ EOF
 
 # Create a .vimrc file
 [ ! -f $HOME/.vimrc ] && { cat > $HOME/.vimrc << EOF
+syntax on
 set tabstop=4
 set shiftwidth=4
 set autoindent
 set incsearch
 set complete-=i
 set linebreak
-syntax enable
 set wrap
 set ruler
 set number
@@ -163,7 +154,7 @@ if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fed
 		#require dnf
 		which dnf >& /dev/null
 		if [ $? -eq 1 ]; then
-			sudo yum install -y epel-release && sudo yum install -y dnf && sudo dnf upgrade -y epel-release; else
+			sudo yum install -y epel-release dnf && sudo dnf upgrade -y epel-release; else
 			sudo dnf install -y epel-release && sudo dnf upgrade -y epel-release;
 		fi
 		
@@ -202,11 +193,15 @@ if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fed
 		oddjob \
 		oddjob-mkhomedir \
 		adcli \
-		samba-common-tools
+		samba-common-tools \
+		python3-dbus \
+		python3-gobject \
+		libvert-client \
+		glibc
 		
 		if [ Z"$theos" = Z"centos" ]; then
 			if [ $major -eq 7 ]; then
-				sudo dnf install -y python3-pip python-devel ncurses-devel
+				sudo dnf install -y python3 python3-pip python-dbus python-gobject python-devel ncurses-devel
 			elif [ $major -eq 8 ]; then
 				sudo dnf install -y ncurses-compat-libs
 			fi
@@ -226,32 +221,16 @@ if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fed
 		
 		sudo systemctl restart sshd
 		
-		# Install xRDP
-		sudo dnf install -y xrdp && sudo systemctl enable --now xrdp
-		sudo sed -i.bak '$a \ \nexec gnome-session' /etc/xrdp/xrdp.ini
-		sudo systemctl restart xrdp
-		sudo firewall-cmd --new-zone=xrdp --permanent
-		sudo firewall-cmd --zone=xrdp --add-port=3389/tcp --permanent
-		sudo firewall-cmd --reload
-		
 		# Install Homebrew
 		yes "" | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
 		sed -i.bak '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"' ~/.bashrc
 		
 		# Install Snap
 		sudo dnf -y install snapd && sudo systemctl enable --now snapd.socket && sudo ln -s /var/lib/snapd/snap /snap
+		colorecho "don't forget...install snap apps manually..." 3 && sleep 5
 		
 		# Install DCLI
 		pip3 install --user dcli
-		
-		# Install PowerShell
-		sudo curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/yum.repos.d/microsoft.repo \
-		&& sudo dnf install -y powershell
-		
-		# Install VSCode
-		sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-		sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
-		sudo dnf check-update && sudo dnf install -y code
 		
 		# Install Brave Browser
 		if [ Z"$theos" = Z"centos" ]; then
@@ -323,11 +302,18 @@ if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fed
 		cd fonts && ./install.sh && cd $HOME && rm -rf fonts
 		
 		git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
-			
+		
+		# Install PKS Autocomplete plugin
+		cd ~/.oh-my-zsh/custom/plugins
+		git clone https://github.com/tybritten/pks-zsh-autocomplete-plugin.git pks
+		cd $HOME
+		
 		# Revisions to ~/.zshrc
-		sed -i.bak 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel9k\/powerlevel9k"/' ~/.zshrc
-		sed -i '1s/^/export TERM="xterm-256color"\n\n/' ~/.zshrc
-		sed -i '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"\n' ~/.zshrc
+		sed -i.bak '1s/^/export TERM="xterm-256color"\n\n/' ~/.zshrc
+		sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel9k\/powerlevel9k"/' ~/.zshrc
+		sed -i 's/plugins=(git)/plugins=(git pks)/' ~/.zshrc
+		sed -i '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"' ~/.zshrc
+		sed -i '$a \\nexport PATH=$PATH:"/snap/bin"\n' ~/.zshrc
 		sed -i '$a \tmux\nalias c="clear"\nalias k="kubectl"\nalias ping="prettyping"\nalias w="watch -n1"\nalias cat="bat"' ~/.zshrc
 		sed -i '$a \\nif [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi' ~/.zshrc
 		
@@ -367,6 +353,7 @@ elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]; then
 		net-tools \
 		nmap \
 		nfs-common \
+		ntp \
 		cockpit \
 		vim-gui-common \
 		java-common \
@@ -384,16 +371,12 @@ elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]; then
 		
 		sudo ufw allow ssh && sudo ufw allow http && sudo ufw allow https \
 		&& sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp \
-		&& sudo ufw allow 9090/tcp
+		&& && sudo ufw allow 3389/tcp && sudo ufw allow 9090/tcp
 		
 		sudo sed -i.bak 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 		sudo sed -i.bak 's/#   Protocol 2/\   \Protocol 2/' /etc/ssh/ssh_config
 		
 		sudo ufw enable
-		
-		# Install XRDP
-		sudo apt install -y xrdp && sudo adduser xrdp ssl-cert
-		sudo ufw allow 3389/tcp && sudo systemctl restart xrdp
 		
 		# Install Homebrew
 		yes "" | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
@@ -402,26 +385,14 @@ elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]; then
 		# Install Snap
 		sudo apt install -y snapd && sudo systemctl enable --now snapd.socket && sudo ln -s /var/lib/snapd/snap /snap
 		
-		# Install DCLI
-		pip3 install --user dcli
-		
 		# Install PowerShell
-		v=${verid/\.*/}
-		if [ $v -eq 18 ]; then
-			wget -q https://packages.microsoft.com/config/ubuntu/$verid/packages-microsoft-prod.deb
-			sudo apt install -y ./packages-microsoft-prod.deb && sudo apt update && apt autoremove
-			sudo apt install -y powershell
-			sudo rm -rf ~/packages-*.deb
-		elif [ $v -ge 19 ]; then
-			sudo snap install powershell --classic
-		fi
+		sudo snap install powershell --classic
 		
 		# Install VSCode
-		colorecho "VSCode can also be installed via snap by running: snap install core --classic" 3
-		curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-		sudo install -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/
-		sudo sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
-		sudo apt-get install apt-transport-https && sudo apt-get update && sudo apt-get install code
+		sudo snap install core --classic
+		
+		# Install DCLI
+		pip3 install --user dcli
 		
 		# Install Brave Browser
 		sudo apt install -y apt-transport-https curl
@@ -483,11 +454,17 @@ elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]; then
 		sudo apt install -y fonts-powerline
 		
 		git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
-			
+		
+		# Install PKS Autocomplete pliugin
+		cd ~/.oh-my-zsh/custom/plugins
+		git clone https://github.com/tybritten/pks-zsh-autocomplete-plugin.git pks
+		cd $HOME
+		
 		# Revisions to ~/.zshrc
-		sed -i.bak 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel9k\/powerlevel9k"/' ~/.zshrc
-		sed -i '1s/^/export TERM="xterm-256color"\n\n/' ~/.zshrc
-		sed -i '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"\n' ~/.zshrc
+		sed -i.bak '1s/^/export TERM="xterm-256color"\n\n/' ~/.zshrc
+		sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel9k\/powerlevel9k"/' ~/.zshrc
+		sed -i 's/plugins=(git)/plugins=(git pks)/' ~/.zshrc
+		sed -i '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"' ~/.zshrc
 		sed -i '$a \\nexport PATH=$PATH:"/snap/bin"\n' ~/.zshrc
 		sed -i '$a \tmux\nalias c="clear"\nalias k="kubectl"\nalias ping="prettyping"\nalias w="watch -n1"\nalias cat="bat"' ~/.zshrc
 		sed -i '$a \\nif [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi' ~/.zshrc
