@@ -20,21 +20,21 @@
 # on-screen colors
 function colorecho() {
 # https://tinyurl.com/prompt-color-using-tput
-    str=$1
-    col=$2
-    docol=1
-    if [ Z"$2" = Z"" ]
-    then
-        docol=0
-    fi
-    if [ $docol -eq 1 ]
-    then
-        color=`tput setaf $col`
+	str=$1
+	col=$2
+	docol=1
+	if [ Z"$2" = Z"" ]
+	then
+		docol=0
+	fi
+	if [ $docol -eq 1 ]
+	then
+		color=`tput setaf $col`
 		nc=`tput sgr0`
 		echo ${color}${str}${nc}
-    else
-        echo ${str}
-    fi
+	else
+		echo ${str}
+	fi
 }
 
 function findos() {
@@ -83,26 +83,8 @@ do
 	shift
 done
 
-doit=1
-if [ Z"$us" != Z"" ]
-then
-	grep ${us}: /etc/passwd >& /dev/null
-	if [ $? -ne 0 ]
-	then
-		doit=0
-	fi
-else
-	# are we root?
-	us=`id -u`
-	if [ $us -eq 0 ]
-	then
-		doit=0
-	else
-		doit=1
-	fi
-fi
-
-if [ $doit -eq 0 ] || [ Z"$us" = Z"root" ]
+us=`id -un`
+if [ Z"$us" = Z"root" ]
 then
 	colorecho "Error: Requires a valid non-root username to execute script." 1
 	usage
@@ -170,4 +152,4 @@ wget -O $HOME/vsm_update.sh https://raw.githubusercontent.com/virtualex-itv/itv-
 
 clear
 
-colorecho -e "$VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
+colorecho "VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
