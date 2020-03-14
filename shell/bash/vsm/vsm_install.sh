@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018-2019
+# Copyright (c) iThinkVirtual 2018-2020
 # All rights reserved
 #
 # vim: tabstop=4 shiftwidth=4
@@ -94,6 +94,16 @@ fi
 theos=''
 
 findos
+
+which dnf >& /dev/null
+
+if [ $? -eq 1 ]
+then
+	if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fedora" ]
+	then
+        	sudo yum install -y epel-release dnf && sudo dnf upgrade -y epel-release
+	fi
+fi
 
 which wget >& /dev/null
 
