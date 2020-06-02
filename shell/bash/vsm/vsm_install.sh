@@ -12,7 +12,7 @@
 #link for daily updates of aac-base files and vsm.
 #
 # Requires:
-# wget
+# dnf wget
 #
 #
 # example: ./vsm_install.sh America/New_York
@@ -111,7 +111,7 @@ if [ $? -eq 1 ]
 then
 	if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fedora" ]
 	then
-        	sudo yum install -y wget
+        	sudo dnf install -y wget
 	elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]
 	then
         	sudo apt-get install -y wget
@@ -129,28 +129,28 @@ chmod +x aac-base.install
 if [ Z"$us" != "" ]
 then
 	./aac-base.install -u --user $us $tz
-	sudo ./aac-base.install -i vsm --user $us $tz
+	sudo ./aac-base.install -i LinuxVSM --user $us $tz
 else
 	./aac-base.install -u $tz
-	sudo ./aac-base.install -i vsm $tz
+	sudo ./aac-base.install -i LinuxVSM $tz
 fi
 
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018-2019
+# Copyright (c) iThinkVirtual 2018-2020
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
-#Kills any running vsm processes
+#Kills any running LinuxVSM processes
 pkill -9 vsm.sh
 
-#Updates base files and reinstalls VSM
+#Updates base files and reinstalls LinuxVSM
 cd $HOME/aac-base
 ./aac-base.install -u $tz
-./aac-base.install -i vsm $tz
+./aac-base.install -i LinuxVSM $tz
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 

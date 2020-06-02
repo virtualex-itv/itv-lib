@@ -40,26 +40,26 @@ aac_new=$(ls ./aac-base/aac-base.* 2> /dev/null | wc -l)
 
 sleep 2
 
-#Updates base files and reinstalls VSM
-cd $HOME/aac-base; ./aac-base.install -u $tz; sudo ./aac-base.install -i vsm $tz
+#Updates base files and reinstalls LinuxVSM
+cd $HOME/aac-base; ./aac-base.install -u $tz; sudo ./aac-base.install -i LinuxVSM $tz
 
 #Creates script to link to cron.daily
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018
+# Copyright (c) iThinkVirtual 2020
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
 #(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
-#Kills any running vsm processes
+#Kills any running LinuxVSM processes
 pkill -9 vsm.sh
 
-#Updates base files and reinstalls VSM
+#Updates base files and reinstalls LinuxVSM
 cd $HOME/aac-base
 ./aac-base.install -u $tz
-./aac-base.install -i vsm $tz
+./aac-base.install -i LinuxVSM $tz
 EOF
 } && chmod +x $HOME/vsm_cron.sh
 
@@ -71,4 +71,4 @@ EOF
 
 clear
 
-colorecho "VSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
+colorecho "LinuxVSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
