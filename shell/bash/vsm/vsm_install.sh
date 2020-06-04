@@ -4,12 +4,12 @@
 #
 # vim: tabstop=4 shiftwidth=4
 #
-#This script downloads and installs the Linux verison of VMware Software Manager (VSM)
+#This script downloads and installs the Linux version of VMware Software Manager (LinuxVSM)
 #created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.  It has some added intelligence around what to download along with picking
-#up thingsavailable but not strictly listed for download.  Bypassing of packages not created
+#up things available but not strictly listed for download.  Bypassing of packages not created
 #yet.  It also downloads my vsm_update script and adds it to cron jobs via symbolic
-#link for daily updates of aac-base files and vsm.
+#link for daily updates of aac-base files and LinuxVSM.
 #
 # Requires:
 # dnf wget
@@ -128,10 +128,10 @@ chmod +x aac-base.install
 
 if [ Z"$us" != "" ]
 then
-	./aac-base.install -u --user $us $tz
+	sudo ./aac-base.install -u --user $us $tz
 	sudo ./aac-base.install -i LinuxVSM --user $us $tz
 else
-	./aac-base.install -u $tz
+	sudo ./aac-base.install -u $tz
 	sudo ./aac-base.install -i LinuxVSM $tz
 fi
 
@@ -141,7 +141,7 @@ fi
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
-#(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
+#(LinuxVSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
 #Kills any running LinuxVSM processes
@@ -162,4 +162,4 @@ wget -O $HOME/vsm_update.sh https://raw.githubusercontent.com/virtualex-itv/itv-
 
 clear
 
-colorecho "VSM is now in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
+colorecho "LinuxVSM is now in $(which vsm.sh) and ready for use. Enjoy! :)" 5

@@ -5,9 +5,9 @@
 # vim: tabstop=4 shiftwidth=4
 #
 #This script updates the aac-base files and reinstalls the Linux VMware Software Manager
-#(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
+#(LinuxVSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.  It also adds a script to cron jobs via symbolic link for daily updates
-#of aac-base files and vsm.
+#of aac-base files and LinuxVSM.
 #
 # example: ./vsm_update.sh America/New_York
 
@@ -41,16 +41,16 @@ aac_new=$(ls ./aac-base/aac-base.* 2> /dev/null | wc -l)
 sleep 2
 
 #Updates base files and reinstalls LinuxVSM
-cd $HOME/aac-base; ./aac-base.install -u $tz; sudo ./aac-base.install -i LinuxVSM $tz
+cd $HOME/aac-base; sudo ./aac-base.install -u $tz; sudo ./aac-base.install -i LinuxVSM $tz
 
 #Creates script to link to cron.daily
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2020
+# Copyright (c) iThinkVirtual 2018-2020
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
-#(VSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
+#(LinuxVSM) created by, Edward Haletky aka Texiwill, on RHEL, CentOS, Ubuntu, and Debian Linux
 #distributions.
 
 #Kills any running LinuxVSM processes
@@ -71,4 +71,4 @@ EOF
 
 clear
 
-colorecho "LinuxVSM is now updated in /usr/local/bin/vsm.sh and ready for use. Enjoy! :)" 5
+colorecho "LinuxVSM is now updated in $(which vsm.sh) and ready for use. Enjoy! :)" 5
