@@ -229,7 +229,7 @@ if [ Z"$theos" = Z"centos" ] || [ Z"$theos" = Z"redhat" ] || [ Z"$theos" = Z"fed
 				sudo systemctl restart sshd
 				
 				# Install Homebrew
-				yes "" | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+				yes "" | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 				sed -i.bak '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"' ~/.bashrc
 				
 				# Install Snap
@@ -413,7 +413,7 @@ elif [ Z"$theos" = Z"debian" ] || [ Z"$theos" = Z"ubuntu" ]; then
 				sudo ufw enable
 				
 				# Install Homebrew
-				yes "" | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+				yes "" | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 				sed -i.bak '$a \\nexport PATH=$PATH:"/home/linuxbrew/.linuxbrew/bin"' ~/.bashrc
 				
 				# Install Snap
