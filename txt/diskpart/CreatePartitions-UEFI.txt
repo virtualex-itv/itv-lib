@@ -1,40 +1,40 @@
-:: == Usage: DiskPart /s F:\CreatePartitions-UEFI.txt
-:: ================================================
-:: == CreatePartitions-UEFI.txt ==
-:: == These commands are used with DiskPart to
-::    create five partitions
-::    for a UEFI/GPT-based PC.
-::    Adjust the partition sizes to fill the drive
-::    as necessary. ==
-:: == 1. Windows RE tools partition ===============
+rem == Usage: DiskPart /s F:\CreatePartitions-UEFI.txt
+rem ================================================
+rem == CreatePartitions-UEFI.txt ==
+rem == These commands are used with DiskPart to
+rem    create five partitions
+rem    for a UEFI/GPT-based PC.
+rem    Adjust the partition sizes to fill the drive
+rem    as necessary. ==
+rem == 1. Windows RE tools partition ===============
 select disk 0
 clean
 convert gpt
-:: == 1. Windows RE tools partition ===============
+rem == 1. Windows RE tools partition ===============
 create partition primary size=500
 format quick fs=ntfs label="Windows RE tools"
 assign letter="T"
 set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac"
 gpt attributes=0x8000000000000001
-:: == 2. System partition =========================
+rem == 2. System partition =========================
 create partition efi size=100
-::    ** NOTE:: For Advanced Format 4Kn drives,
-::               change this value to size = 260 **
+rem    ** NOTE:: For Advanced Format 4Kn drives,
+rem               change this value to size = 260 **
 format quick fs=fat32 label="System"
 assign letter="S"
-:: == 3. Microsoft Reserved (MSR) partition =======
+rem == 3. Microsoft Reserved (MSR) partition =======
 create partition msr size=16
-:: == 4. Windows partition ========================
-:: ==    a. Create the Windows partition ==========
+rem == 4. Windows partition ========================
+rem ==    a. Create the Windows partition ==========
 create partition primary
-:: ==    b. Create space for the recovery image ===
+rem ==    b. Create space for the recovery image ===
 shrink minimum=500
-::       ** NOTE:: Update this size to match the size
-::                of the recovery image           **
-:: ==    c. Prepare the Windows partition =========
+rem       ** NOTE:: Update this size to match the size
+rem                of the recovery image           **
+rem ==    c. Prepare the Windows partition =========
 format quick fs=ntfs label="Windows"
 assign letter="W"
-:: === 5. Recovery image partition ================
+rem === 5. Recovery image partition ================
 create partition primary
 format quick fs=ntfs label="Recovery image"
 assign letter="R"
