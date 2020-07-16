@@ -57,7 +57,7 @@ $vftdepotURL = "https://vibsdepot.v-front.de/"
 function AddVIB2Profile($vib) {
     $AddVersion = $vib.Version
     $ExVersion = ($MyProfile.VibList | where { $_.Name -eq $vib.Name }).Version
-
+    
     # Check for vib replacements
     $ExName = ""
     if ($ExVersion -eq $null) {
@@ -70,7 +70,7 @@ function AddVIB2Profile($vib) {
             }
         }
     }
-
+    
     if ($AccLevel[$vib.AcceptanceLevel.ToString()] -gt $AccLevel[$MyProfile.AcceptanceLevel.ToString()]) {
         write-host -F Yellow -nonewline (" [New AcceptanceLevel: " + $vib.AcceptanceLevel + "]")
         $MyProfile.AcceptanceLevel = $vib.AcceptanceLevel
@@ -401,26 +401,27 @@ if ( ($pkgDir -ne @()) -or $update -or ($load -ne @()) -or ($remove -ne @()) ) {
         write-host -F Cyan "`nLoading Offline bundles and VIB files from" $pkgDir ...
         foreach ($dir in $pkgDir) {
             foreach ($obundle in Get-Item $dir\*.zip) {
-            write-host -nonewline "   Loading" $obundle ...
-            if ($ob = Add-EsxSoftwaredepot $obundle -ErrorAction SilentlyContinue) {
-                write-host -F Green " [OK]"
-                $ob | Get-EsxSoftwarePackage | foreach {
-                    write-host -nonewline "      Add VIB" $_.Name $_.Version
-                    AddVIB2Profile $_
+                write-host -nonewline "   Loading" $obundle ...
+                if ($ob = Add-EsxSoftwaredepot $obundle -ErrorAction SilentlyContinue) {
+                    write-host -F Green " [OK]"
+                    $ob | Get-EsxSoftwarePackage | foreach {
+                        write-host -nonewline "      Add VIB" $_.Name $_.Version
+                        AddVIB2Profile $_
+                    }
+                } else {
+                    write-host -F Red " [FAILED]`n      Probably not a valid Offline bundle, ignoring."
                 }
-            } else {
-                write-host -F Red " [FAILED]`n      Probably not a valid Offline bundle, ignoring."
             }
-        }
-        foreach ($vibFile in Get-Item $dir\*.vib) {
-            write-host -nonewline "   Loading" $vibFile ...
-            try {
-                $vib1 = Get-EsxSoftwarePackage -PackageUrl $vibFile -ErrorAction SilentlyContinue
-                write-host -F Green " [OK]"
-                write-host -nonewline "      Add VIB" $vib1.Name $vib1.Version
-                AddVIB2Profile $vib1
-            } catch {
-                write-host -F Red " [FAILED]`n      Probably not a valid VIB file, ignoring."
+            foreach ($vibFile in Get-Item $dir\*.vib) {
+                write-host -nonewline "   Loading" $vibFile ...
+                try {
+                    $vib1 = Get-EsxSoftwarePackage -PackageUrl $vibFile -ErrorAction SilentlyContinue
+                    write-host -F Green " [OK]"
+                    write-host -nonewline "      Add VIB" $vib1.Name $vib1.Version
+                    AddVIB2Profile $vib1
+                } catch {
+                    write-host -F Red " [FAILED]`n      Probably not a valid VIB file, ignoring."
+                }
             }
         }
     }
