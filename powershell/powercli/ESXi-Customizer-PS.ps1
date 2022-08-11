@@ -2,7 +2,7 @@
 #
 # ESXi-Customizer-PS.ps1 - a script to build a customized ESXi installation ISO using ImageBuilder
 #
-# Version:        2.8.1
+# Version:        2.8.2
 # Author:         Andreas Peetz (ESXi-Customizer-PS@v-front.de)
 # Contributor:    Alex Lopez (info@ithinkvirtual.com)
 # Info/Tutorial:  https://esxi-customizer-ps.v-front.de/
@@ -44,7 +44,7 @@ param(
 
 # Constants
 $ScriptName = "ESXi-Customizer-PS"
-$ScriptVersion = "2.8.1"
+$ScriptVersion = "2.8.2"
 $ScriptURL = "https://ESXi-Customizer-PS.v-front.de"
 
 $AccLevel = @{"VMwareCertified" = 1; "VMwareAccepted" = 2; "PartnerSupported" = 3; "CommunitySupported" = 4}
@@ -118,7 +118,7 @@ if ($help) {
     write-host "   -update            : only with -izip, updates a local bundle with an ESXi patch from the VMware Online depot,"
     write-host "                        combine this with the matching ESXi version selection switch"
     write-host "   -pzip              : use an Offline patch bundle instead of the Online depot with -update."
-    write-host "   -pkgDir <dir>      : local directory of Offline bundles and/or VIB files to add (if any, no default)"
+    write-host "   -pkgDir <dir>[,...]: local directories of Offline bundles and/or VIB files to add (if any, no default)"
     write-host "   -ozip              : output an Offline bundle instead of an installation ISO"
     write-host "   -outDir <dir>      : directory to store the customized ISO or Offline bundle (the default is the"
     write-host "                        script directory. If specified the log file will also be moved here.)"
@@ -160,6 +160,13 @@ if ($help) {
 $isModule = @{}
 try {
 
+# Check for and enable Ssl3 & Tls12 support for this session (WinError 10054 workaround, may still fail at times.)
+    if ([Net.ServicePointManager]::SecurityProtocol -notcontains 'Ssl3') {
+        [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Ssl3 | Out-Null
+    }
+    if ([Net.ServicePointManager]::SecurityProtocol -notcontains 'Tls12') {
+        [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 | Out-Null
+    }
 # Check for and load required modules/snapins
 foreach ($comp in "VMware.VimAutomation.Core", "VMware.ImageBuilder") {
     if (Get-Module -ListAvailable -Name $comp -ErrorAction:SilentlyContinue) {
@@ -290,42 +297,30 @@ $iplist = @()
 if ($izip -and !($update)) {
     Get-EsxImageprofile -Softwaredepot $basedepot | foreach { $iplist += $_ }
 } else {
-	if ($v70) {
-		Get-EsxImageprofile "ESXi-7.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-	} else {
-		if ($v67) {
-			Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-		} else {
-			if ($v65) {
-				Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-			} else {
-				if ($v60) {
-					Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-				} else {
-					if ($v55) {
-						Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-					} else {
-						if ($v51) {
-							Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-						} else {
-							if ($v50) {
-								Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-							} else {
-								# Workaround for http://kb.vmware.com/kb/2089217
-								Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-								Get-EsxImageprofile "ESXi-7.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    if ($v70) {
+        Get-EsxImageprofile "ESXi-7.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v67) {
+        Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v65) {
+        Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v60) {
+        Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v55) {
+        Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v51) {
+        Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } elseif ($v50) {
+        Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    } else {
+        # Workaround for http://kb.vmware.com/kb/2089217
+        Get-EsxImageprofile "ESXi-5.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-5.1*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-5.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-6.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-6.5*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-6.7*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+        Get-EsxImageprofile "ESXi-7.0*" -Softwaredepot $basedepot | foreach { $iplist += $_ }
+    }
 }
 
 if ($iplist.Length -eq 0) {
