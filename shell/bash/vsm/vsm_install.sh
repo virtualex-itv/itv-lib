@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018-2020
+# Copyright (c) iThinkVirtual 2018-2023
 # All rights reserved
 #
 # vim: tabstop=4 shiftwidth=4
@@ -137,7 +137,7 @@ fi
 
 [ ! -f $HOME/vsm_cron.sh ] && { cat > $HOME/vsm_cron.sh << EOF
 #!/bin/bash
-# Copyright (c) iThinkVirtual 2018-2020
+# Copyright (c) iThinkVirtual 2018-2023
 # All rights reserved
 #
 #This script gets added to cron.daily and updates the aac-base files and reinstalls the Linux VMware Software Manager
